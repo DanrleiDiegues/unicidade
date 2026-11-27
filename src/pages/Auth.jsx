@@ -19,7 +19,12 @@ export default function Auth({ onAuthed }) {
       catch (x) { setErr(x.message); } finally { setBusy(false); }
       return;
     }
-    try { onAuthed(mode === 'login' ? await api.signIn(f.email, f.password) : await api.signUp(f)); }
+    try {
+      const sess = mode === 'login' ? await api.signIn(f.email, f.password) : await api.signUp(f);
+      // Pede ao navegador (Chrome/Edge) para oferecer "Salvar senha" no Gerenciador de Senhas do Google.
+      try { if (window.PasswordCredential && navigator.credentials?.store) await navigator.credentials.store(new window.PasswordCredential({ id: f.email, password: f.password, name: sess?.user?.name || f.email })); } catch { /* navegador sem suporte */ }
+      onAuthed(sess);
+    }
     catch (x) { setErr(x.message); } finally { setBusy(false); }
   }
   const quick = (email) => setF({ ...f, email, password: DEMO_PASSWORD });
