@@ -232,3 +232,21 @@ grant select, insert, update, delete on employees to authenticated;
 -- Perfis por área (além de geral e motorista)
 alter table members drop constraint if exists members_role_check;
 alter table members add constraint members_role_check check (role in ('geral','motorista','saude','educacao'));
+
+-- Sugestões de melhoria (qualquer usuário envia; só o admin da plataforma lê tudo e muda o status)
+create table if not exists suggestions (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid references tenants on delete set null,
+  user_id uuid not null default auth.uid(), user_name text, user_email text,
+  view text, tipo text default 'ideia', texto text not null,
+  anexos jsonb default '[]', status text default 'nova', resposta text,
+  created_at timestamptz default now());
+alter table suggestions enable row level security;
+create policy sg_ins on suggestions for insert to authenticated with check (user_id = auth.uid());
+create policy sg_read on suggestions for select to authenticated using (user_id = auth.uid() or is_admin());
+create policy sg_upd on suggestions for update to authenticated using (is_admin()) with check (is_admin());
+grant select, insert, update on suggestions to authenticated;
+-- anexos: bucket privado, cada usuário grava na própria pasta; admin lê tudo
+insert into storage.buckets (id, name, public, file_size_limit) values ('sugestoes', 'sugestoes', false, 8388608) on conflict (id) do nothing;
+create policy sug_up on storage.objects for insert to authenticated with check (bucket_id = 'sugestoes' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy sug_read on storage.objects for select to authenticated using (bucket_id = 'sugestoes' and (is_admin() or (storage.foldername(name))[1] = auth.uid()::text));

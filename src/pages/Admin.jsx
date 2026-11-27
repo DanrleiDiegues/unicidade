@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Building2, Users, Mail, ExternalLink, RotateCcw, Pencil, MapPin, Upload, Check, Loader } from 'lucide-react';
+import { Lightbulb, Plus, Building2, Users, Mail, ExternalLink, RotateCcw, Pencil, MapPin, Upload, Check, Loader } from 'lucide-react';
+import { SugestoesAdmin } from './Sugestoes';
 import { UFS, ibgeMunicipios, localizarCidade, brasaoDataUrl } from '../lib/cityData';
 import { api } from '../lib/api';
 import { MODULES, ROLES } from '../lib/catalog';
@@ -44,7 +45,7 @@ export default function Admin({ notify, onOpenTenant, refresh }) {
       <div className="hero">
         <div><div className="eyebrow">Administração da plataforma</div><h1>Cidades UNIcidade</h1></div>
         <div className="tabs glass" style={{ padding: 5, margin: 0 }}>
-          {[['cities', 'Cidades', Building2], ['users', 'Usuários', Users], ['mail', 'E-mails', Mail]].map(([k, l, I]) => (
+          {[['cities', 'Cidades', Building2], ['users', 'Usuários', Users], ['sug', 'Sugestões', Lightbulb], ['mail', 'E-mails', Mail]].map(([k, l, I]) => (
             <button key={k} className={`btn sm ${tab === k ? 'primary' : 'ghost'}`} onClick={() => setTab(k)}><I size={14} />{l}</button>))}
         </div>
       </div>
@@ -94,6 +95,7 @@ export default function Admin({ notify, onOpenTenant, refresh }) {
         </div>
       )}
 
+      {tab === 'sug' && <SugestoesAdmin notify={notify} />}
       {tab === 'mail' && (
         <div className="glass card"><h3>E-mails de boas-vindas</h3>
           <div className="list">{outbox.map((o) => <div key={o.id} className="row"><Mail size={16} /><div className="grow"><b>{o.subject}</b><small>{o.to} · {fmtDate(o.at)}</small></div></div>)}

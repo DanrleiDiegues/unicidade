@@ -63,7 +63,7 @@ function seedCitizens(db, tenant_id) {
 }
 
 function seed() {
-  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [], suppliers: [], places: [], citizens: [], cevents: [], caccess: [], employees: [] };
+  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [], suppliers: [], places: [], citizens: [], cevents: [], caccess: [], employees: [], suggestions: [] };
   const admin = { id: uid(), name: 'Danrlei Diegues', email: 'danrlei.diegueso@gmail.com', platform_admin: true, welcomed: true };
   const gestor = { id: uid(), name: 'Danrlei Oliveira', email: 'danrlei.oliveira@estudante.ufjf.br', welcomed: false };
   const motorista = { id: uid(), name: 'José Motorista', email: 'motorista@chacara.demo', welcomed: false };
@@ -184,6 +184,20 @@ export const demo = {
     const v = db.vehicles.find((x) => x.id === m.vehicle_id); if (v) { v.status = 'disponivel'; v.km = Math.max(v.km, Number(km_in)); }
     save();
   },
+  async addSuggestion(row, files = []) {
+    const toUrl = (f) => new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(f); });
+    const anexos = [];
+    for (const f of files) { const url = f.size < 900000 ? await toUrl(f) : null; anexos.push({ name: f.name, type: f.type, size: f.size, url }); }
+    const x = { id: uid(), user_id: current, status: 'nova', created_at: now(), anexos, ...row };
+    (db.suggestions ||= []).push(x); save(); return x;
+  },
+  async mySuggestions() { return (db.suggestions || []).filter((x) => x.user_id === current).sort((a, b) => b.created_at.localeCompare(a.created_at)); },
+  async suggestions() {
+    return (db.suggestions || []).map((x) => ({ ...x, tenant_name: db.tenants.find((t) => t.id === x.tenant_id)?.name,
+      anexos: (x.anexos || []).map((a) => ({ ...a, preview: a.type?.startsWith('image/') ? a.url : null })) })).sort((a, b) => b.created_at.localeCompare(a.created_at));
+  },
+  async updateSuggestion(id, patch) { Object.assign(db.suggestions.find((x) => x.id === id), patch); save(); },
+  async suggestionFileUrl(a) { return a.url || null; },
   async employees(tenant_id) { return (db.employees || []).filter((x) => x.tenant_id === tenant_id).sort((a, b) => a.nome.localeCompare(b.nome)); },
   async addEmployee(x) { const e = { id: uid(), ...x }; (db.employees ||= []).push(e); save(); return e; },
   async updateEmployee(id, patch) { Object.assign(db.employees.find((x) => x.id === id), patch); save(); },

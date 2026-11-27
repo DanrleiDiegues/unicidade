@@ -89,6 +89,31 @@ export const supa = {
     const m = ok(await sb.from('moves').update({ km_in: Number(km_in), in_at: new Date().toISOString() }).eq('id', id).select().single());
     await sb.from('vehicles').update({ status: 'disponivel', km: Number(km_in) }).eq('id', m.vehicle_id);
   },
+  async addSuggestion(row, files = []) {
+    const { data: { user } } = await sb.auth.getUser();
+    const anexos = [];
+    for (const [i, f] of files.entries()) {
+      const safe = f.name.normalize('NFD').replace(/[^\w.-]+/g, '_').slice(-80);
+      const path = `${user.id}/${Date.now()}-${i}-${safe}`;
+      const up = await sb.storage.from('sugestoes').upload(path, f, { contentType: f.type || 'application/octet-stream' });
+      if (up.error) throw new Error('Não consegui enviar o anexo "' + f.name + '". Tente de novo.');
+      anexos.push({ path, name: f.name, type: f.type, size: f.size });
+    }
+    return ok(await sb.from('suggestions').insert({ ...row, user_id: user.id, anexos }).select().single());
+  },
+  async mySuggestions() {
+    const { data: { user } } = await sb.auth.getUser();
+    return ok(await sb.from('suggestions').select('id, texto, status, resposta, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10));
+  },
+  async suggestions() {
+    const rows = ok(await sb.from('suggestions').select('*, tenants(name)').order('created_at', { ascending: false }));
+    const imgs = rows.flatMap((r) => (r.anexos || []).filter((a) => a.type?.startsWith('image/')).map((a) => a.path));
+    const urls = {};
+    if (imgs.length) { const { data } = await sb.storage.from('sugestoes').createSignedUrls(imgs, 3600); (data || []).forEach((d) => { if (d.signedUrl) urls[d.path] = d.signedUrl; }); }
+    return rows.map((r) => ({ ...r, tenant_name: r.tenants?.name, anexos: (r.anexos || []).map((a) => ({ ...a, preview: urls[a.path] || null })) }));
+  },
+  async updateSuggestion(id, patch) { ok(await sb.from('suggestions').update(patch).eq('id', id)); },
+  async suggestionFileUrl(a) { const { data } = await sb.storage.from('sugestoes').createSignedUrl(a.path, 600); return data?.signedUrl || null; },
   async employees(tenant_id) { return ok(await sb.from('employees').select('*').eq('tenant_id', tenant_id).order('nome')); },
   async addEmployee(x) { return ok(await sb.from('employees').insert(x).select().single()); },
   async updateEmployee(id, patch) { ok(await sb.from('employees').update(patch).eq('id', id)); },

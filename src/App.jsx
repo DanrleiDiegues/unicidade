@@ -8,6 +8,8 @@ import Hub from './pages/Hub';
 import Mapa from './pages/Mapa';
 import Cidadaos from './pages/Cidadaos';
 import Funcionarios from './pages/Funcionarios';
+import { SugestaoBotao } from './pages/Sugestoes';
+import { TourBotao } from './pages/Tour';
 import Frotas from './pages/Frotas';
 import Motorista from './pages/Motorista';
 import Admin from './pages/Admin';
@@ -52,17 +54,17 @@ export default function App() {
       <header className="topbar">
         <Brand />
         {m && (
-          <div className="city glass">
+          <div className="city glass" data-tour="city">
             {m.tenant.logo_url && <img src={m.tenant.logo_url} alt={`Brasão de ${m.tenant.name}`} />}
             <div><small>Prefeitura de</small><b>{m.tenant.name}</b></div>
           </div>
         )}
         <nav className="pill-nav glass">
-          {m && isGeral(role) && <button className={view === 'hub' ? 'on' : ''} onClick={() => setView('hub')}><LayoutGrid size={15} />Visão geral</button>}
-          {m && isGeral(role) && m.tenant.modules?.includes('mapa') && <button className={view === 'mapa' ? 'on' : ''} onClick={() => setView('mapa')}><MapIcon size={15} />Mapa</button>}
-          {m && isGeral(role) && <button className={view === 'cidadaos' ? 'on' : ''} onClick={() => setView('cidadaos')}><Users size={15} />Cidadãos</button>}
-          {m && isGeral(role) && <button className={view === 'func' ? 'on' : ''} onClick={() => setView('func')}><BadgeCheck size={15} />Funcionários</button>}
-          {m && canSee(role, 'frotas') && m.tenant.modules?.includes('frotas') && <button className={view === 'frotas' ? 'on' : ''} onClick={() => setView('frotas')}><Truck size={15} />UNIfrotas</button>}
+          {m && isGeral(role) && <button data-tour="hub" className={view === 'hub' ? 'on' : ''} onClick={() => setView('hub')}><LayoutGrid size={15} />Visão geral</button>}
+          {m && isGeral(role) && m.tenant.modules?.includes('mapa') && <button data-tour="mapa" className={view === 'mapa' ? 'on' : ''} onClick={() => setView('mapa')}><MapIcon size={15} />Mapa</button>}
+          {m && isGeral(role) && <button data-tour="cidadaos" className={view === 'cidadaos' ? 'on' : ''} onClick={() => setView('cidadaos')}><Users size={15} />Cidadãos</button>}
+          {m && isGeral(role) && <button data-tour="func" className={view === 'func' ? 'on' : ''} onClick={() => setView('func')}><BadgeCheck size={15} />Funcionários</button>}
+          {m && canSee(role, 'frotas') && m.tenant.modules?.includes('frotas') && <button data-tour="frotas" className={view === 'frotas' ? 'on' : ''} onClick={() => setView('frotas')}><Truck size={15} />UNIfrotas</button>}
           {isAdmin && <button className={view === 'admin' ? 'on' : ''} onClick={async () => { setAllTenants(await api.tenants()); setView('admin'); }}><Shield size={15} />Admin</button>}
         </nav>
         {memberships.length > 1 && (
@@ -71,11 +73,13 @@ export default function App() {
             {memberships.map((x) => <option key={x.tenant_id} value={x.tenant_id}>{x.tenant.name}</option>)}
           </select>
         )}
-        <button className="btn sm" title="Alternar tema" onClick={() => setTheme(theme === 'white' ? 'grey' : 'white')}>
-          {theme === 'white' ? <CloudFog size={16} /> : <Sun size={16} />}{theme === 'white' ? 'Grey' : 'White'}
+        <SugestaoBotao session={session} tenant={m?.tenant} view={view} />
+        <TourBotao userId={session.user.id} />
+        <button className="btn sm" data-tour="tema" title="Alternar tema" onClick={() => setTheme(theme === 'white' ? 'grey' : 'white')}>
+          {theme === 'white' ? <CloudFog size={16} /> : <Sun size={16} />}<span className="hide-sm">{theme === 'white' ? 'Grey' : 'White'}</span>
         </button>
         <div className="who glass">
-          <div style={{ textAlign: 'right' }}><div>{session.user.name}</div><small className="muted">{isAdmin ? 'Admin da plataforma' : ROLES[role]?.label || role}</small></div>
+          <div className="who-txt" style={{ textAlign: 'right' }}><div>{session.user.name}</div><small className="muted">{isAdmin ? 'Admin da plataforma' : ROLES[role]?.label || role}</small></div>
           <div className="avatar">{initials(session.user.name)}</div>
           <button className="btn ghost sm" title="Sair" onClick={async () => { await api.signOut(); setSession(null); setTenantId(null); }}><LogOut size={16} /></button>
         </div>
