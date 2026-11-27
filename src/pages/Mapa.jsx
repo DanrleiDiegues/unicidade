@@ -20,7 +20,7 @@ export const PLACE_KINDS = {
 };
 const PRIO = { alta: '#dc2626', media: '#f59e0b', baixa: '#16a34a' };
 const TILES = {
-  mapa: ['https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', '© OpenStreetMap · © CARTO'],
+  mapa: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png', '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'],
   sat: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', '© Esri, Maxar, Earthstar Geographics'],
 };
 const norm = (s) => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
