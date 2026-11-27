@@ -130,3 +130,31 @@ grant execute on function create_trial_city(text), is_admin(), role_in(uuid) to 
 -- insert into tenants (slug, name, uf, modules) values ('chacara', 'Chácara', 'MG', '{frotas}');
 -- insert into members select p.id, t.id, 'geral' from profiles p, tenants t
 --   where p.email = 'danrlei.oliveira@estudante.ufjf.br' and t.slug = 'chacara';
+
+-- Convites pré-aprovados (aplicado em 26/11/2026): quem se cadastrar ou for convidado com o e-mail
+-- já entra na cidade com o papel certo, e não ganha cidade de teste.
+create table if not exists invites (email text primary key, tenant_slug text not null, role text not null, name text);
+alter table invites enable row level security;
+create policy i_admin on invites for all using (is_admin()) with check (is_admin());
+grant select, insert, update, delete on invites to authenticated;
+create or replace function handle_new_user() returns trigger language plpgsql security definer set search_path = public as $$
+declare i invites;
+begin
+  select * into i from invites where lower(email) = lower(new.email);
+  insert into profiles (id, email, name)
+    values (new.id, new.email, coalesce(i.name, new.raw_user_meta_data->>'name', split_part(new.email,'@',1)));
+  if i.email is not null then
+    insert into members (user_id, tenant_id, role) select new.id, t.id, i.role from tenants t where t.slug = i.tenant_slug on conflict do nothing;
+  end if;
+  return new;
+end $$;
+create or replace function create_trial_city(city_name text) returns uuid language plpgsql security definer set search_path = public as $$
+declare t uuid;
+begin
+  select tenant_id into t from members where user_id = auth.uid() limit 1;
+  if t is not null then return t; end if;
+  insert into tenants (slug, name, plan, modules)
+    values (substr(md5(random()::text), 1, 8), city_name || ' (teste)', 'trial', '{frotas}') returning id into t;
+  insert into members (user_id, tenant_id, role) values (auth.uid(), t, 'geral');
+  return t;
+end $$;
