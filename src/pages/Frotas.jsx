@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Wrench, Car, Fuel, CheckCircle2, Circle, ChevronRight, ChevronLeft, ArrowLeftRight, Check, Ban, Search } from 'lucide-react';
+import { Plus, Wrench, Car, Fuel, Store, CheckCircle2, Circle, ChevronRight, ChevronLeft, ArrowLeftRight, Check, Ban, Search } from 'lucide-react';
 import { api } from '../lib/api';
 import { STAGES, VEHICLE_TYPES, VEHICLE_STATUS, FORM_TASK } from '../lib/catalog';
 import { FORMS, FormModal } from '../forms';
 import { NewSmc } from './Motorista';
 import Guide from './Guide';
+import Suppliers, { SupplierSelect } from './Suppliers';
 import { Modal, fmtDate, brl } from '../ui';
 
 export function OrderView({ order, vehicle, tenant, editable, onChange }) {
@@ -32,7 +33,7 @@ export function OrderView({ order, vehicle, tenant, editable, onChange }) {
       {order.description && <p className="muted">{order.description}</p>}
       {editable && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
-          <label className="f">Oficina / fornecedor<input className="input" disabled={ro} defaultValue={order.oficina} onBlur={(e) => e.target.value !== order.oficina && onChange({ oficina: e.target.value })} /></label>
+          <label className="f">Oficina / fornecedor<SupplierSelect tenant={tenant} disabled={ro} value={order.oficina} onChange={(name) => onChange({ oficina: name }, `Fornecedor: ${name}`)} /></label>
           <label className="f">Valor (R$)<input className="input" type="number" disabled={ro} defaultValue={order.value || ''} onBlur={(e) => Number(e.target.value) !== order.value && onChange({ value: Number(e.target.value) }, `Valor: ${brl(Number(e.target.value))}`)} /></label>
         </div>
       )}
@@ -114,7 +115,7 @@ export default function Frotas({ tenant, user, notify }) {
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button className="btn primary" onClick={() => setSmc(true)}><Plus size={16} />Abrir OS</button>
         <div className="tabs glass" style={{ padding: 5, margin: 0 }}>
-          {[['manut', 'Manutenção', Wrench], ['mov', 'Movimentações', ArrowLeftRight], ['veic', 'Veículos', Car], ['fuel', 'Abastecimento', Fuel]].map(([k, l, I]) => (
+          {[['manut', 'Manutenção', Wrench], ['mov', 'Movimentações', ArrowLeftRight], ['veic', 'Veículos', Car], ['forn', 'Fornecedores', Store], ['fuel', 'Abastecimento', Fuel]].map(([k, l, I]) => (
             <button key={k} className={`btn sm ${tab === k ? 'primary' : 'ghost'}`} onClick={() => setTab(k)}><I size={14} />{l}</button>
           ))}
         </div>
@@ -182,6 +183,8 @@ export default function Frotas({ tenant, user, notify }) {
             ))}{!fMoves.length && <tr><td colSpan={7} className="muted">Nenhuma movimentação.</td></tr>}</tbody></table>
         </div>
       )}
+
+      {tab === 'forn' && <Suppliers tenant={tenant} match={match} />}
 
       {tab === 'fuel' && (
         <div className="glass card"><h3>Abastecimentos recentes</h3>

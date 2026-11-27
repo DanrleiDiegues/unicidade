@@ -2,7 +2,7 @@
 // Tem as mesmas funções do adaptador Supabase (supa.js), então as telas não mudam.
 import { STAGES } from './catalog';
 
-const KEY = 'unicidade-demo-v4';
+const KEY = 'unicidade-demo-v5';
 const uid = () => Math.random().toString(36).slice(2, 10);
 const now = () => new Date().toISOString();
 const daysAgo = (d) => new Date(Date.now() - d * 864e5).toISOString();
@@ -50,7 +50,7 @@ function seedFleet(db, tenant_id, driverId) {
 }
 
 function seed() {
-  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [] };
+  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [], suppliers: [] };
   const admin = { id: uid(), name: 'Danrlei Diegues', email: 'danrlei.diegueso@gmail.com', platform_admin: true, welcomed: true };
   const gestor = { id: uid(), name: 'Danrlei Oliveira', email: 'danrlei.oliveira@estudante.ufjf.br', welcomed: false };
   const motorista = { id: uid(), name: 'José Motorista', email: 'motorista@chacara.demo', welcomed: false };
@@ -60,6 +60,8 @@ function seed() {
   db.tenants.push(chacara);
   db.members.push({ user_id: helton.id, tenant_id: chacara.id, role: 'geral' }, { user_id: gestor.id, tenant_id: chacara.id, role: 'geral' }, { user_id: motorista.id, tenant_id: chacara.id, role: 'motorista' });
   seedFleet(db, chacara.id, motorista.id);
+  [['Auto Elétrica Chácara (exemplo)', 'Auto elétrica'], ['Mecânica Diesel São João (exemplo)', 'Oficina mecânica'], ['Concessionária VW Juiz de Fora (exemplo)', 'Concessionária']]
+    .forEach(([name, kind]) => db.suppliers.push({ id: uid(), tenant_id: chacara.id, name, kind, doc: '', phone: '' }));
   return db;
 }
 
@@ -161,6 +163,8 @@ export const demo = {
     const v = db.vehicles.find((x) => x.id === m.vehicle_id); if (v) { v.status = 'disponivel'; v.km = Math.max(v.km, Number(km_in)); }
     save();
   },
+  async suppliers(tenant_id) { return (db.suppliers || []).filter((x) => x.tenant_id === tenant_id).sort((a, b) => a.name.localeCompare(b.name)); },
+  async addSupplier(x) { const s = { id: uid(), ...x }; (db.suppliers ||= []).push(s); save(); return s; },
   async fuel(tenant_id) { return db.fuel.filter((f) => f.tenant_id === tenant_id); },
   async reset() { db = seed(); save(); },
 };

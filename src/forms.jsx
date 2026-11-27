@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Printer, Check } from 'lucide-react';
 import { Modal, fmtDate } from './ui';
+import { SupplierSelect } from './pages/Suppliers';
 
 export const GRAVIDADE = [
   ['baixa', 'O veículo pode continuar circulando normalmente'],
@@ -30,7 +31,7 @@ export const FORMS = [
     { title: 'Observações e assinaturas', fields: [['obs', 'Observações', 'textarea'], ['ass_condutor', 'Condutor', 'sign'], ['ass_entrega', 'Responsável pela entrega', 'sign']] },
   ] },
   { key: 'oficina', code: '02', stage: 2, title: 'Oficina credenciada · entrada, orçamento e diagnóstico', sections: [
-    { title: 'Entrada na oficina', fields: [['oficina', 'Oficina credenciada'], ['entrada', 'Entrada do veículo', 'date'], ['hora', 'Horário', 'time']] },
+    { title: 'Entrada na oficina', fields: [['oficina', 'Oficina credenciada', 'supplier'], ['entrada', 'Entrada do veículo', 'date'], ['hora', 'Horário', 'time']] },
     { title: 'Previsão de orçamento', fields: [['itens', 'Itens (descrição e valor, um por linha)', 'textarea'], ['mao_obra', 'Mão de obra (R$)', 'money'], ['pecas', 'Troca de peças (R$)', 'money']] },
     { title: 'Diagnóstico técnico', fields: [['diagnostico', 'Diagnóstico técnico', 'textarea'], ['ass_mecanico', 'Mecânico', 'sign']] },
   ] },
@@ -44,9 +45,10 @@ export const formLabel = (f) => `Formulário ${f.code} · ${f.title}`;
 
 const brl = (n) => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-function Field({ f, v, set, ro }) {
+function Field({ f, v, set, ro, tenant }) {
   const [k, label, type = 'text', opts] = f;
   const val = v[k];
+  if (type === 'supplier') return <label className="f">{label}<SupplierSelect tenant={tenant} disabled={ro} value={val} onChange={(x) => set(k, x)} /></label>;
   if (type === 'textarea') return <label className="f">{label}<textarea className="input" rows={3} disabled={ro} value={val || ''} onChange={(e) => set(k, e.target.value)} /></label>;
   if (type === 'radio') return (
     <div className="f"><span>{label}</span><div className="chips">{opts.map(([ov, ol]) => (
@@ -75,7 +77,7 @@ function Field({ f, v, set, ro }) {
 
 export function FormModal({ form, order, vehicle, tenant, editable, onSave, onClose }) {
   const saved = order.forms?.[form.key] || {};
-  const [v, setV] = useState(saved.data || {});
+  const [v, setV] = useState(saved.data || (form.key === 'oficina' && order.oficina ? { oficina: order.oficina } : {}));
   const set = (k, x) => setV((o) => ({ ...o, [k]: x }));
   const ro = !editable;
   return (
@@ -85,7 +87,7 @@ export function FormModal({ form, order, vehicle, tenant, editable, onSave, onCl
         {form.sections.map((s) => (
           <fieldset key={s.title} style={{ border: '1px solid var(--line)', borderRadius: 14, padding: 14, display: 'grid', gap: 10 }}>
             <legend style={{ padding: '0 6px', fontWeight: 600, fontSize: 13 }}>{s.title}</legend>
-            {s.fields.map((f) => <Field key={f[0]} f={f} v={v} set={set} ro={ro} />)}
+            {s.fields.map((f) => <Field key={f[0]} f={f} v={v} set={set} ro={ro} tenant={tenant} />)}
           </fieldset>
         ))}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', flexWrap: 'wrap' }}>

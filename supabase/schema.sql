@@ -165,3 +165,15 @@ update tenants set logo_url = '/logos/chacara.png' where slug = 'chacara';
 
 -- Formulários 01, 02 e 03 dentro da ocorrência (26/11/2026)
 alter table orders add column if not exists forms jsonb not null default '{}';
+
+-- Fornecedores (lista fixa por cidade, usada na OS e no Formulário 02)
+create table if not exists suppliers (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references tenants on delete cascade,
+  name text not null, kind text, doc text, phone text,
+  created_at timestamptz default now()
+);
+alter table suppliers enable row level security;
+create policy s_read on suppliers for select using (is_admin() or role_in(tenant_id) is not null);
+create policy s_write on suppliers for all using (is_admin() or role_in(tenant_id) = 'geral') with check (is_admin() or role_in(tenant_id) = 'geral');
+grant select, insert, update, delete on suppliers to authenticated;

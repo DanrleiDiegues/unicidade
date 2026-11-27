@@ -89,6 +89,8 @@ export const supa = {
     const m = ok(await sb.from('moves').update({ km_in: Number(km_in), in_at: new Date().toISOString() }).eq('id', id).select().single());
     await sb.from('vehicles').update({ status: 'disponivel', km: Number(km_in) }).eq('id', m.vehicle_id);
   },
+  async suppliers(tenant_id) { return ok(await sb.from('suppliers').select('*').eq('tenant_id', tenant_id).order('name')); },
+  async addSupplier(x) { return ok(await sb.from('suppliers').insert(x).select().single()); },
   async fuel(tenant_id) { return ok(await sb.from('fuel').select('*').eq('tenant_id', tenant_id)); },
   async reset() {},
 };
