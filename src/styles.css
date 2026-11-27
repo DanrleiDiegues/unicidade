@@ -351,3 +351,12 @@ table.t td { padding: 10px; border-top: 1px solid var(--line); }
 .brasao-up .brasao-vazio { width: 56px; height: 64px; }
 .spin { animation: uc-spin 1s linear infinite; }
 @keyframes uc-spin { to { transform: rotate(360deg); } }
+
+/* listas suspensas (select) legíveis nos dois temas */
+:root { color-scheme: light; }
+[data-theme="grey"] { color-scheme: dark; }
+select option, select optgroup { background: #ffffff; color: #0f172a; }
+[data-theme="grey"] select option, [data-theme="grey"] select optgroup { background: #3f454d; color: #f4f6f8; }
+[data-theme="grey"] select option:checked { background: #2563eb; color: #fff; }
+[data-theme="grey"] input::placeholder, [data-theme="grey"] textarea::placeholder { color: rgba(244,246,248,.6); }
+[data-theme="grey"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
