@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Building2, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { Brand } from '../ui';
 import { api } from '../lib/api';
 import { DEMO_PASSWORD } from '../lib/demo';
 
@@ -21,7 +22,7 @@ export default function Auth({ onAuthed }) {
     <div className="auth">
       <div className="auth-box glass">
         <div className="auth-side">
-          <div className="brand"><div className="logo"><Building2 size={18} /></div><span><b>UNI</b>cidade</span></div>
+          <Brand />
           <div>
             <div className="eyebrow">Inteligência para a gestão municipal</div>
             <h1>Uma plataforma. Todas as secretarias.</h1>
@@ -67,7 +68,7 @@ export function SetPassword({ name, onDone }) {
   return (
     <div className="auth">
       <form className="glass auth-form" style={{ width: 'min(440px, 100%)' }} onSubmit={submit}>
-        <div className="brand"><div className="logo"><Building2 size={18} /></div><span><b>UNI</b>cidade</span></div>
+        <Brand />
         <h2 style={{ margin: 0 }}>Bem-vindo(a), {name?.split(' ')[0]}!</h2>
         <p className="muted" style={{ margin: 0 }}>Crie a sua senha para acessar o UNIcidade.</p>
         <label className="f">Nova senha<input className="input" type="password" required minLength={6} value={pw} onChange={(e) => setPw(e.target.value)} /></label>

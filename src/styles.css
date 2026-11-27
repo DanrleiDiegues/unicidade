@@ -3,13 +3,13 @@
   --glass: rgba(255,255,255,.52); --glass-strong: rgba(255,255,255,.72); --glass-border: rgba(255,255,255,.75);
   --line: rgba(15,23,42,.08); --text: #0f172a; --muted: #5b6577; --accent: #2563eb; --accent-2: #0ea5a4;
   --ok: #16a34a; --warn: #d97706; --bad: #dc2626; --shadow: 0 10px 40px rgba(30,41,59,.10);
-  --radius: 22px; --modal: rgba(255,255,255,.9);
+  --radius: 22px; --modal: rgba(255,255,255,.9); --map-line: rgba(71,85,105,.13); --map-river: rgba(14,116,144,.12);
 }
 [data-theme="grey"] {
   --bg1: #6b737d; --bg2: #4f565f; --blob1: #8fa8c8; --blob2: #b49a86; --blob3: #7fa59a;
   --glass: rgba(255,255,255,.12); --glass-strong: rgba(255,255,255,.2); --glass-border: rgba(255,255,255,.22);
   --line: rgba(255,255,255,.12); --text: #f4f6f8; --muted: #cdd3da; --accent: #93c5fd; --accent-2: #5eead4;
-  --shadow: 0 10px 40px rgba(0,0,0,.18); --modal: rgba(72,78,87,.92);
+  --shadow: 0 10px 40px rgba(0,0,0,.18); --modal: rgba(72,78,87,.92); --map-line: rgba(255,255,255,.09); --map-river: rgba(125,211,252,.12);
 }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
@@ -19,11 +19,15 @@ body {
   -webkit-font-smoothing: antialiased; transition: background .4s, color .3s;
 }
 .backdrop { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-.backdrop .b { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .7; }
+.backdrop .b { position: absolute; border-radius: 50%; filter: blur(80px); opacity: .45; }
 .backdrop .b1 { width: 520px; height: 520px; background: var(--blob1); top: -140px; left: -120px; }
 .backdrop .b2 { width: 460px; height: 460px; background: var(--blob2); bottom: -160px; right: -80px; }
 .backdrop .b3 { width: 380px; height: 380px; background: var(--blob3); top: 35%; left: 45%; }
-.backdrop svg { position: absolute; bottom: 0; left: 0; width: 100%; height: 38vh; opacity: .16; color: var(--text); }
+.backdrop .map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.backdrop .st { fill: none; stroke: var(--map-line); stroke-width: 1; }
+.backdrop .av { fill: none; stroke: var(--map-line); stroke-width: 3; }
+.backdrop .rv { fill: none; stroke: var(--map-river); stroke-width: 6; stroke-linecap: round; }
+.backdrop .pt { fill: var(--accent); }
 
 .glass {
   background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius);
@@ -51,6 +55,9 @@ label.f { display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
 .topbar { display: flex; align-items: center; gap: 16px; padding: 18px 28px; }
 .brand { font-weight: 700; font-size: 20px; letter-spacing: -.02em; display: flex; align-items: center; gap: 10px; }
 .brand b { font-weight: 800; }
+.city { display: flex; align-items: center; gap: 10px; padding: 6px 14px 6px 8px; font-size: 13px; }
+.city img { height: 34px; width: auto; }
+.city small { display: block; color: var(--muted); font-size: 11px; }
 .brand .logo { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center;
   background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; }
 .pill-nav { display: flex; gap: 4px; padding: 5px; margin: 0 auto; }

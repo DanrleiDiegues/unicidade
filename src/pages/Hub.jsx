@@ -23,9 +23,12 @@ export default function Hub({ tenant, user, onOpen }) {
   return (
     <>
       <div className="hero">
-        <div>
+        <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
+          {tenant.logo_url && <img src={tenant.logo_url} alt={`Brasão de ${tenant.name}`} style={{ height: 76 }} />}
+          <div>
           <div className="eyebrow">Prefeitura de {tenant.name} · {tenant.uf}</div>
           <h1>{hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite'}, {user.name.split(' ')[0]} <span>· visão da cidade</span></h1>
+          </div>
         </div>
         <span className="badge">{tenant.plan === 'trial' ? 'Período de teste' : 'Plano gratuito'}</span>
       </div>

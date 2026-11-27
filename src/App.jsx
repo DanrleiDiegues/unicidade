@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { LayoutGrid, Truck, Shield, Sun, CloudFog, LogOut, Building2 } from 'lucide-react';
+import { LayoutGrid, Truck, Shield, Sun, CloudFog, LogOut } from 'lucide-react';
 import { api } from './lib/api';
 import { canSee } from './lib/catalog';
-import { Backdrop, initials } from './ui';
+import { Backdrop, Brand, initials } from './ui';
 import Auth, { SetPassword } from './pages/Auth';
 import Hub from './pages/Hub';
 import Frotas from './pages/Frotas';
@@ -46,7 +46,13 @@ export default function App() {
     <div className="shell">
       <Backdrop />
       <header className="topbar">
-        <div className="brand"><div className="logo"><Building2 size={18} /></div><span><b>UNI</b>cidade</span></div>
+        <Brand />
+        {m && (
+          <div className="city glass">
+            {m.tenant.logo_url && <img src={m.tenant.logo_url} alt={`Brasão de ${m.tenant.name}`} />}
+            <div><small>Prefeitura de</small><b>{m.tenant.name}</b></div>
+          </div>
+        )}
         <nav className="pill-nav glass">
           {m && role !== 'motorista' && <button className={view === 'hub' ? 'on' : ''} onClick={() => setView('hub')}><LayoutGrid size={15} />Visão geral</button>}
           {m && canSee(role, 'frotas') && m.tenant.modules?.includes('frotas') && <button className={view === 'frotas' ? 'on' : ''} onClick={() => setView('frotas')}><Truck size={15} />UNIfrotas</button>}

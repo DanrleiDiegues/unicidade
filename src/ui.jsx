@@ -5,12 +5,35 @@ import {
 const ICONS = { Truck, HeartPulse, GraduationCap, Construction, Landmark, HandHeart, Map, Sparkles };
 export const ModIcon = ({ name, size = 22 }) => { const I = ICONS[name] || Sparkles; return <I size={size} strokeWidth={1.7} />; };
 
+// Logo UNIcidade: a cidade como uma rede conectada.
+export const UniLogo = ({ size = 34 }) => (
+  <svg width={size} height={size} viewBox="0 0 34 34" aria-hidden>
+    <rect width="34" height="34" rx="9" fill="#0e7490" />
+    <g stroke="#fff" strokeWidth="1.6" fill="none"><path d="M9 11 17 8l8 3M9 11v12l8 3 8-3V11M17 8v18" /></g>
+    <g fill="#fff"><circle cx="9" cy="11" r="2" /><circle cx="25" cy="11" r="2" /><circle cx="17" cy="26" r="2" /><circle cx="17" cy="8" r="2" /></g>
+  </svg>
+);
+export const Brand = () => (
+  <div className="brand"><UniLogo /><span><b>UNI</b>cidade</span></div>
+);
+
+// Fundo: mapa viário em traço fino, desenhado uma vez (leve e nítido em qualquer tela).
+const streets = (() => {
+  const d = [];
+  for (let i = -2; i < 26; i++) d.push(`M${i * 70} -50 l${120} 1300`);
+  for (let j = -2; j < 18; j++) d.push(`M-100 ${j * 76} l2200 ${-160}`);
+  return d.join(' ');
+})();
 export function Backdrop() {
   return (
     <div className="backdrop" aria-hidden>
       <div className="b b1" /><div className="b b2" /><div className="b b3" />
-      <svg viewBox="0 0 1200 300" preserveAspectRatio="none" fill="currentColor">
-        <path d="M0 300V210h60v-40h40v40h30V150h50v60h40v-90h30v-30h20v30h30v90h50V180h60v-60h40v60h30v30h70V140h20V90h40v50h20v70h50v-50h60v50h40V110h70v100h30v-40h50v40h60V160h40v-50h30v50h30v50h60v-30h40v30h70v90z" />
+      <svg className="map" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+        <path d={streets} className="st" />
+        <path d="M-50 860 C 300 700, 520 760, 760 560 S 1200 300, 1700 260" className="av" />
+        <path d="M120 -40 C 260 220, 300 420, 520 620 S 760 980, 820 1100" className="av" />
+        <path d="M-40 420 C 260 380, 560 470, 900 430 S 1400 330, 1700 360" className="rv" />
+        <circle cx="760" cy="560" r="5" className="pt" />
       </svg>
     </div>
   );

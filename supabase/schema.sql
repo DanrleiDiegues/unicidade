@@ -158,3 +158,7 @@ begin
   insert into members (user_id, tenant_id, role) values (auth.uid(), t, 'geral');
   return t;
 end $$;
+
+-- Brasão da cidade (26/11/2026)
+alter table tenants add column if not exists logo_url text;
+update tenants set logo_url = '/logos/chacara.png' where slug = 'chacara';

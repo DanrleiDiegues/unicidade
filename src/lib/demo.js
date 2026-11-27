@@ -56,7 +56,7 @@ function seed() {
   const motorista = { id: uid(), name: 'José Motorista', email: 'motorista@chacara.demo', welcomed: false };
   const helton = { id: uid(), name: 'Helton Diegues', email: 'heltondiegues@gmail.com', password: 'heltonchacara', welcomed: false };
   db.users.push(admin, gestor, motorista, helton);
-  const chacara = { id: uid(), slug: 'chacara', name: 'Chácara', uf: 'MG', plan: 'free', modules: ['frotas'], created_at: now() };
+  const chacara = { id: uid(), slug: 'chacara', name: 'Chácara', uf: 'MG', logo_url: './logos/chacara.png', plan: 'free', modules: ['frotas'], created_at: now() };
   db.tenants.push(chacara);
   db.members.push({ user_id: helton.id, tenant_id: chacara.id, role: 'geral' }, { user_id: gestor.id, tenant_id: chacara.id, role: 'geral' }, { user_id: motorista.id, tenant_id: chacara.id, role: 'motorista' });
   seedFleet(db, chacara.id, motorista.id);
