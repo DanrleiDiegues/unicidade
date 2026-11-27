@@ -22,8 +22,8 @@ export default function Motorista({ tenant, user, notify }) {
   return (
     <>
       <div className="hero">
-        <div><div className="eyebrow">{tenant.name} · UNIfrotas · Motorista</div><h1>Minhas ocorrências</h1></div>
-        <button className="btn primary" onClick={() => setForm(true)}><Plus size={16} />Registrar ocorrência</button>
+        <div><div className="eyebrow">{tenant.name} · UNIfrotas · Motorista</div><h1>Meus chamados de manutenção</h1></div>
+        <button className="btn primary" onClick={() => setForm(true)}><Plus size={16} />Abrir chamado de manutenção</button>
       </div>
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
         {orders.map((o) => {
@@ -37,10 +37,10 @@ export default function Motorista({ tenant, user, notify }) {
             </div>
           );
         })}
-        {!orders.length && <div className="glass card muted">Nenhuma ocorrência registrada ainda.</div>}
+        {!orders.length && <div className="glass card muted">Nenhum chamado aberto ainda.</div>}
       </div>
 
-      {form && <NewSmc tenant={tenant} user={user} vehicles={vehicles} count={orders.length} onClose={() => setForm(null)} onDone={() => { setForm(null); notify('Ocorrência registrada (Formulário 01 · SMC). A gestão da frota já foi avisada.'); load(); }} />}
+      {form && <NewSmc tenant={tenant} user={user} vehicles={vehicles} count={orders.length} onClose={() => setForm(null)} onDone={() => { setForm(null); notify('Chamado aberto (Formulário 01 · SMC). A gestão da frota já foi avisada.'); load(); }} />}
       {sel && <Modal title={sel.title} onClose={() => setSel(null)}><OrderView order={sel} tenant={tenant} vehicle={vehicles.find((v) => v.id === sel.vehicle_id)} /></Modal>}
     </>
   );
@@ -60,8 +60,9 @@ export function NewSmc({ tenant, user, vehicles, count, onClose, onDone }) {
     onDone();
   }
   return (
-    <Modal title={`Formulário 01 · SMC nº ${numero}`} onClose={onClose}>
+    <Modal title="Abrir chamado de manutenção" onClose={onClose}>
       <form className="form" onSubmit={submit}>
+        <div className="demo-hint">Este chamado é o <b>Formulário 01 · SMC (Solicitação de Manutenção Corretiva)</b> da prefeitura, nº {numero}. Depois de enviado, a gestão da frota completa a parte dela e o chamado segue pelo kanban.</div>
         <label className="f">Veículo<select className="input" value={f.vehicle_id} onChange={set('vehicle_id')}>
           {vehicles.map((v) => <option key={v.id} value={v.id}>{v.plate} · {v.model}</option>)}</select></label>
         <div className="cols">
@@ -74,7 +75,7 @@ export function NewSmc({ tenant, user, vehicles, count, onClose, onDone }) {
         <label className="f">Descrição do defeito<textarea className="input" rows={3} value={f.defeito} onChange={set('defeito')} /></label>
         <div className="f"><span>Classificação da gravidade</span>{GRAVIDADE.map(([v, l]) => (
           <label key={v} style={{ display: 'flex', gap: 8, color: 'var(--text)' }}><input type="radio" name="grav" checked={f.gravidade === v} onChange={() => setF({ ...f, gravidade: v })} />{l}</label>))}</div>
-        <button className="btn primary">Enviar SMC</button>
+        <button className="btn primary">Enviar chamado</button>
       </form>
     </Modal>
   );

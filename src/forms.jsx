@@ -16,7 +16,7 @@ const ACESSORIOS = ['Bagagito', 'Calota', 'Chave de roda', 'Triângulo', 'Macaco
 
 // type: text | date | time | number | money | textarea | radio | checks | sign | sna | tires
 export const FORMS = [
-  { key: 'smc', code: '01', stage: 0, title: 'Solicitação de Manutenção Corretiva (SMC)', sections: [
+  { key: 'smc', code: '01', stage: 0, title: 'Chamado de manutenção · SMC (Solicitação de Manutenção Corretiva)', sections: [
     { title: 'Identificação', fields: [['numero', 'Nº da SMC'], ['data', 'Data', 'date'], ['setor', 'Setor solicitante'], ['motorista', 'Motorista'], ['hodometro', 'Hodômetro (km)', 'number']] },
     { title: 'Descrição do defeito', fields: [['defeito', 'Descrição do defeito', 'textarea'], ['gravidade', 'Classificação da gravidade', 'radio', GRAVIDADE]] },
     { title: 'Assinaturas', fields: [['ass_motorista', 'Motorista', 'sign'], ['ass_chefe', 'Chefe do setor', 'sign']] },
