@@ -5,6 +5,7 @@ import { STAGES, MAINT_TYPES } from '../lib/catalog';
 import { GRAVIDADE } from '../forms';
 import { Modal, fmtDate } from '../ui';
 import { OrderView } from './Frotas';
+import Guide from './Guide';
 
 export default function Motorista({ tenant, user, notify }) {
   const [vehicles, setVehicles] = useState([]);
@@ -25,7 +26,7 @@ export default function Motorista({ tenant, user, notify }) {
         <div><div className="eyebrow">{tenant.name} · UNIfrotas · Motorista</div><h1>Minhas OS</h1></div>
         <button className="btn primary" onClick={() => setForm(true)}><Plus size={16} />Abrir OS</button>
       </div>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+      <div className="with-guide"><div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
         {orders.map((o) => {
           const v = vehicles.find((x) => x.id === o.vehicle_id);
           return (
@@ -38,7 +39,7 @@ export default function Motorista({ tenant, user, notify }) {
           );
         })}
         {!orders.length && <div className="glass card muted">Nenhuma OS aberta ainda.</div>}
-      </div>
+      </div><Guide kind="motorista" /></div>
 
       {form && <NewSmc tenant={tenant} user={user} vehicles={vehicles} count={orders.length} onClose={() => setForm(null)} onDone={() => { setForm(null); notify('OS aberta (Formulário 01 · SMC). A gestão da frota já foi avisada.'); load(); }} />}
       {sel && <Modal title={sel.title} onClose={() => setSel(null)}><OrderView order={sel} tenant={tenant} vehicle={vehicles.find((v) => v.id === sel.vehicle_id)} /></Modal>}

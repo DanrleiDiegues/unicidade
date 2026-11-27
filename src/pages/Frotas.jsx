@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Wrench, Car, Fuel, CheckCircle2, Circle, ChevronRight, ChevronLeft, ArrowLeftRight, Check, Ban } from 'lucide-react';
+import { Plus, Wrench, Car, Fuel, CheckCircle2, Circle, ChevronRight, ChevronLeft, ArrowLeftRight, Check, Ban, Search } from 'lucide-react';
 import { api } from '../lib/api';
 import { STAGES, VEHICLE_TYPES, VEHICLE_STATUS, FORM_TASK } from '../lib/catalog';
 import { FORMS, FormModal } from '../forms';
 import { NewSmc } from './Motorista';
+import Guide from './Guide';
 import { Modal, fmtDate, brl } from '../ui';
 
 export function OrderView({ order, vehicle, tenant, editable, onChange }) {
@@ -85,6 +86,14 @@ export default function Frotas({ tenant, user, notify }) {
   const [moves, setMoves] = useState([]);
   const [mv, setMv] = useState(null);
   const [smc, setSmc] = useState(false);
+  const [q, setQ] = useState({ text: '', sec: '', prio: '', status: '', done: true });
+  const norm = (x) => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const secretarias = [...new Set(vehicles.map((v) => v.secretaria).filter(Boolean))].sort();
+  const vOk = (v) => v && (!q.sec || v.secretaria === q.sec) && (!q.status || v.status === q.status);
+  const match = (...xs) => !q.text || xs.some((x) => norm(x).includes(norm(q.text)));
+  const fOrders = orders.filter((o) => { const v = vehicles.find((x) => x.id === o.vehicle_id); return vOk(v) && (!q.prio || o.priority === q.prio) && (q.done || !o.closed) && match(o.title, v?.plate, v?.model, o.forms?.smc?.data?.numero); });
+  const fVehicles = vehicles.filter((v) => vOk(v) && match(v.plate, v.model, v.type, v.secretaria));
+  const fMoves = moves.filter((m) => { const v = vehicles.find((x) => x.id === m.vehicle_id); return vOk(v) && match(v?.plate, v?.model, m.setor, m.finalidade, m.driver); });
 
   const load = useCallback(async () => {
     const [v, o, f, m] = await Promise.all([api.vehicles(tenant.id), api.orders(tenant.id), api.fuel(tenant.id), api.moves(tenant.id)]);
@@ -111,12 +120,22 @@ export default function Frotas({ tenant, user, notify }) {
         </div>
         </div>
       </div>
+      <div className="with-guide"><div>
+      <div className="filters glass">
+        <Search size={16} className="muted" />
+        <input className="input grow" placeholder="Buscar placa, modelo, nº da OS ou problema" value={q.text} onChange={(e) => setQ({ ...q, text: e.target.value })} />
+        <select className="input" value={q.sec} onChange={(e) => setQ({ ...q, sec: e.target.value })}><option value="">Todas as secretarias</option>{secretarias.map((x) => <option key={x}>{x}</option>)}</select>
+        {tab === 'manut' && <select className="input" value={q.prio} onChange={(e) => setQ({ ...q, prio: e.target.value })}><option value="">Todas as prioridades</option><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option></select>}
+        {tab === 'veic' && <select className="input" value={q.status} onChange={(e) => setQ({ ...q, status: e.target.value })}><option value="">Todas as situações</option>{Object.entries(VEHICLE_STATUS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>}
+        {tab === 'manut' && <label><input type="checkbox" checked={q.done} onChange={(e) => setQ({ ...q, done: e.target.checked })} />Mostrar concluídas</label>}
+        {(q.text || q.sec || q.prio || q.status) && <button className="btn ghost sm" onClick={() => setQ({ text: '', sec: '', prio: '', status: '', done: true })}>Limpar filtros</button>}
+      </div>
       {smc && <NewSmc tenant={tenant} user={user} vehicles={vehicles} count={orders.length} onClose={() => setSmc(false)} onDone={() => { setSmc(false); notify('OS aberta (Formulário 01 · SMC). Ela está na coluna 1. Solicitação.'); load(); }} />}
 
       {tab === 'manut' && (
         <div className="kanban">
           {STAGES.map((s, i) => {
-            const list = orders.filter((o) => o.stage === i && !o.cancelled);
+            const list = fOrders.filter((o) => o.stage === i && !o.cancelled);
             return (
               <div key={s.name} className="glass col">
                 <div className="col-head"><span>{i + 1}. {s.name}</span><span className="n">{list.length}</span></div>
@@ -139,10 +158,10 @@ export default function Frotas({ tenant, user, notify }) {
 
       {tab === 'veic' && (
         <div className="glass card">
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}><h3>Veículos</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><h3>Veículos <span className="muted" style={{ fontWeight: 400 }}>· {fVehicles.length} de {vehicles.length}</span></h3>
             <button className="btn sm primary" onClick={() => setNewCar({ plate: '', model: '', type: 'Outro', secretaria: '', km: '', year: '' })}><Plus size={14} />Novo veículo</button></div>
           <table className="t"><thead><tr><th>Placa</th><th>Modelo</th><th>Tipo</th><th>Secretaria</th><th>Km</th><th>Situação</th></tr></thead>
-            <tbody>{vehicles.map((v) => (
+            <tbody>{fVehicles.map((v) => (
               <tr key={v.id}><td><b>{v.plate}</b></td><td>{v.model}</td><td>{v.type}</td><td>{v.secretaria}</td><td>{Number(v.km).toLocaleString('pt-BR')}</td>
                 <td><span className={`badge ${v.status === 'disponivel' ? 'on' : 'prio-media'}`}>{VEHICLE_STATUS[v.status] || v.status}</span></td></tr>
             ))}</tbody></table>
@@ -154,13 +173,13 @@ export default function Frotas({ tenant, user, notify }) {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}><h3>Saídas e devoluções</h3>
             <button className="btn sm primary" onClick={() => { const v = vehicles.find((x) => x.status === 'disponivel'); setMv({ vehicle_id: v?.id, setor: '', finalidade: '', driver: '', km_out: v?.km || '' }); }}><Plus size={14} />Registrar saída</button></div>
           <table className="t"><thead><tr><th>Veículo</th><th>Setor</th><th>Finalidade</th><th>Responsável</th><th>Saída</th><th>Km</th><th></th></tr></thead>
-            <tbody>{moves.map((m) => (
+            <tbody>{fMoves.map((m) => (
               <tr key={m.id}><td><b>{vOf(m.vehicle_id)?.plate}</b></td><td>{m.setor}</td><td>{m.finalidade}</td><td>{m.driver}</td><td>{fmtDate(m.out_at)}</td>
                 <td>{m.km_out}{m.km_in ? ` → ${m.km_in}` : ''}</td>
                 <td>{m.in_at ? <span className="badge on">devolvido</span> : (
                   <span style={{ display: 'flex', gap: 6 }}><input className="input" style={{ width: 100, padding: '5px 8px' }} type="number" placeholder="Km retorno" onChange={(e) => (m._km = e.target.value)} />
                     <button className="btn sm" onClick={() => giveBack(m)}>Devolver</button></span>)}</td></tr>
-            ))}{!moves.length && <tr><td colSpan={7} className="muted">Nenhuma movimentação.</td></tr>}</tbody></table>
+            ))}{!fMoves.length && <tr><td colSpan={7} className="muted">Nenhuma movimentação.</td></tr>}</tbody></table>
         </div>
       )}
 
@@ -172,6 +191,8 @@ export default function Frotas({ tenant, user, notify }) {
             ))}</tbody></table>
         </div>
       )}
+
+      </div><Guide kind="gestor" /></div>
 
       {sel && <Modal title={sel.title} onClose={() => setSel(null)}><OrderView order={sel} vehicle={vOf(sel.vehicle_id)} tenant={tenant} editable onChange={update} /></Modal>}
       {mv && (
