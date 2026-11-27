@@ -224,3 +224,9 @@ table.t td { padding: 10px; border-top: 1px solid var(--line); }
 .city-now .cn-pop { padding-left: 24px; border-left: 1px solid rgba(148,163,184,.35); }
 .city-now .cn-go { margin-left: auto; display: flex; gap: 6px; align-items: center; font-weight: 600; color: var(--accent, #2563eb); }
 @media (max-width: 980px) { .map-page { grid-template-columns: 1fr; } .map { height: 60vh; min-height: 380px; } .map-side { max-height: none; } .city-now { flex-wrap: wrap; gap: 12px; } .city-now .cn-go { margin-left: 0; } }
+/* lateral do mapa sem rolagem própria: a página rola e o mapa fica fixo */
+.map-page { grid-template-columns: minmax(0, 1fr) 380px; gap: 22px; }
+.map-side { max-height: none; overflow: visible; padding: 0 6px 24px 0; gap: 16px; }
+.map-side .card { padding: 20px 22px; }
+.map-box { position: sticky; top: 84px; }
+@media (max-width: 980px) { .map-box { position: relative; top: 0; } }
