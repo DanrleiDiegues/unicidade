@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { LayoutGrid, Truck, Shield, Sun, CloudFog, LogOut, Map as MapIcon, Users, BadgeCheck } from 'lucide-react';
 import { api } from './lib/api';
 import { canSee, ROLES, isGeral } from './lib/catalog';
-import { Backdrop, Brand, initials } from './ui';
+import { Backdrop, Brand, initials, Splash } from './ui';
 import Auth, { SetPassword } from './pages/Auth';
 import Hub from './pages/Hub';
 import Mapa from './pages/Mapa';
@@ -14,6 +14,7 @@ import Admin from './pages/Admin';
 
 export default function App() {
   const [session, setSession] = useState(undefined);
+  const [splash, setSplash] = useState(false);
   const [tenantId, setTenantId] = useState(null);
   const [view, setView] = useState('hub');
   const [theme, setTheme] = useState(() => { try { return localStorage.getItem('uc-theme') || 'white'; } catch { return 'white'; } });
@@ -35,7 +36,7 @@ export default function App() {
   }
 
   if (session === undefined) return <Backdrop />;
-  if (!session) return <><Backdrop /><Auth onAuthed={enter} /></>;
+  if (!session) return <><Backdrop /><Auth onAuthed={(s) => { setSplash(true); enter(s); }} /></>;
   if (api.needsPassword && !session.pwDone) return <><Backdrop /><SetPassword name={session.user.name} onDone={() => setSession({ ...session, pwDone: true })} /></>;
 
   const isAdmin = session.user.platform_admin;
@@ -93,6 +94,7 @@ export default function App() {
         {!m && view !== 'admin' && <div className="glass card">Seu usuário ainda não está vinculado a nenhuma cidade.</div>}
       </main>
       {toast && <div className="toast glass">{toast}</div>}
+      {splash && <Splash tenant={isAdmin ? null : session.memberships[0]?.tenant} onDone={() => setSplash(false)} />}
     </div>
   );
 }

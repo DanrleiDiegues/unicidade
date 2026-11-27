@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Truck, HeartPulse, GraduationCap, Construction, Landmark, HandHeart, Map, Sparkles, X,
@@ -72,3 +73,34 @@ export const Kpi = ({ icon, label, value, sub }) => (
 export const fmtDate = (iso) => new Date(iso).toLocaleDateString('pt-BR');
 export const brl = (n) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 export const initials = (name = '') => name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
+
+// Abertura após o login: monta o pórtico, mostra o nome e depois o brasão da cidade.
+export function Splash({ tenant, onDone }) {
+  const [out, setOut] = useState(false);
+  useEffect(() => {
+    const fast = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const t1 = setTimeout(() => setOut(true), fast ? 500 : (tenant ? 2100 : 1500));
+    const t2 = setTimeout(onDone, fast ? 800 : (tenant ? 2500 : 1900));
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className={`splash ${out ? 'out' : ''}`} onClick={onDone} role="status" aria-label="Carregando UNIcidade">
+      <div className="splash-in">
+        <svg width="92" height="92" viewBox="0 0 46 46" aria-hidden className="sp-logo">
+          <path className="sp-dome" d="M13 15a10 10 0 0 1 20 0z" fill="var(--logo-soft)" />
+          <rect className="sp-mast" x="22" y="2" width="2" height="4" fill="var(--logo-main)" />
+          <rect className="sp-beam" x="6" y="15" width="34" height="4" rx="1.5" fill="var(--logo-main)" />
+          {[9, 17, 24.5, 32.5].map((x, i) => <rect key={x} className="sp-col" style={{ animationDelay: `${0.12 + i * 0.07}s` }} x={x} y="21" width="4.5" height="15" rx="1.5" fill="var(--logo-main)" />)}
+          <rect className="sp-base" x="4" y="38" width="38" height="4" rx="2" fill="var(--logo-accent)" />
+        </svg>
+        <div className="sp-word">UNIcidade</div>
+        {tenant && (
+          <div className="sp-city">
+            {tenant.logo_url && <img src={tenant.logo_url} alt={`Brasão de ${tenant.name}`} />}
+            <div><small>Prefeitura de</small><b>{tenant.name}</b></div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
