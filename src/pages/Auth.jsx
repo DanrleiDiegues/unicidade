@@ -47,10 +47,9 @@ export default function Auth({ onAuthed }) {
             <div className="as-label">Um módulo para cada secretaria</div>
             <div className="as-mods">
               {[...MODULES].sort((a, b) => (b.ready ? 1 : 0) - (a.ready ? 1 : 0)).slice(0, 6).map((m) => (
-                <div key={m.key} className={`as-mod ${m.ready ? 'on' : ''}`}>
+                <div key={m.key} className="as-mod on">
                   <ModIcon name={m.icon} />
                   <b>{m.name}</b>
-                  <small>{m.ready ? 'Ativo' : 'Em breve'}</small>
                 </div>))}
             </div>
             <div className="as-foot">Um único login para cada servidor.</div>
