@@ -36,7 +36,7 @@ export default function Auth({ onAuthed }) {
         <div className="auth-side">
           <Brand />
           <div className="as-main">
-            <h1 className="as-title">A prefeitura inteira, em um só lugar.</h1>
+            <h1 className="as-title">A cidade inteira, em um só lugar.</h1>
             <ul className="as-list">
               <li><Building2 size={16} />Todas as secretarias integradas</li>
               <li><MapIcon size={16} />Mapa, clima e dados do IBGE</li>
