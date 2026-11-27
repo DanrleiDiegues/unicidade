@@ -67,8 +67,8 @@ export const supa = {
     if (onlyUser) q = q.eq('created_by', onlyUser);
     return ok(await q);
   },
-  async createOrder({ tenant_id, vehicle_id, title, description, priority, km, by, type = 'Corretiva', forms = {} }) {
-    const o = ok(await sb.from('orders').insert({ tenant_id, vehicle_id, title, description, priority, type, forms, stage: 0,
+  async createOrder({ tenant_id, vehicle_id, title, description, priority, km, by, type = 'Corretiva', forms = {}, lat = null, lng = null }) {
+    const o = ok(await sb.from('orders').insert({ tenant_id, vehicle_id, title, description, priority, type, forms, lat, lng, stage: 0,
       tasks: tasks0(), created_by: by, history: [{ at: new Date().toISOString(), text: `Ocorrência registrada${km ? ` (km ${km})` : ''}` }] }).select().single());
     await sb.from('vehicles').update({ status: 'manutencao', ...(km ? { km: Number(km) } : {}) }).eq('id', vehicle_id);
     return o;
@@ -89,6 +89,9 @@ export const supa = {
     const m = ok(await sb.from('moves').update({ km_in: Number(km_in), in_at: new Date().toISOString() }).eq('id', id).select().single());
     await sb.from('vehicles').update({ status: 'disponivel', km: Number(km_in) }).eq('id', m.vehicle_id);
   },
+  async places(tenant_id) { return ok(await sb.from('places').select('*').eq('tenant_id', tenant_id)); },
+  async addPlace(x) { return ok(await sb.from('places').insert(x).select().single()); },
+  async updatePlace(id, patch) { ok(await sb.from('places').update(patch).eq('id', id)); },
   async suppliers(tenant_id) { return ok(await sb.from('suppliers').select('*').eq('tenant_id', tenant_id).order('name')); },
   async addSupplier(x) { return ok(await sb.from('suppliers').insert(x).select().single()); },
   async fuel(tenant_id) { return ok(await sb.from('fuel').select('*').eq('tenant_id', tenant_id)); },

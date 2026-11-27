@@ -2,7 +2,7 @@
 // Tem as mesmas funções do adaptador Supabase (supa.js), então as telas não mudam.
 import { STAGES } from './catalog';
 
-const KEY = 'unicidade-demo-v5';
+const KEY = 'unicidade-demo-v6';
 const uid = () => Math.random().toString(36).slice(2, 10);
 const now = () => new Date().toISOString();
 const daysAgo = (d) => new Date(Date.now() - d * 864e5).toISOString();
@@ -37,7 +37,7 @@ function seedFleet(db, tenant_id, driverId) {
     if (!closed) car.status = 'manutencao';
     db.orders.push({
       id: uid(), tenant_id, vehicle_id: car.id, title, description: '', priority, stage, closed, type: 'Corretiva', oficina: '', value: 0,
-      tasks: tasksFor(stage), created_by: driverId, created_at: daysAgo(d),
+      tasks: tasksFor(stage), created_by: driverId, created_at: daysAgo(d), lat: [-21.655, -21.690, null, -21.700, -21.664, null][v] ?? null, lng: [-43.248, -43.205, null, -43.262, -43.190, null][v] ?? null,
       history: [{ at: daysAgo(d), text: 'Ocorrência registrada' }],
     });
   });
@@ -50,16 +50,20 @@ function seedFleet(db, tenant_id, driverId) {
 }
 
 function seed() {
-  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [], suppliers: [] };
+  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [], suppliers: [], places: [] };
   const admin = { id: uid(), name: 'Danrlei Diegues', email: 'danrlei.diegueso@gmail.com', platform_admin: true, welcomed: true };
   const gestor = { id: uid(), name: 'Danrlei Oliveira', email: 'danrlei.oliveira@estudante.ufjf.br', welcomed: false };
   const motorista = { id: uid(), name: 'José Motorista', email: 'motorista@chacara.demo', welcomed: false };
   const helton = { id: uid(), name: 'Helton Diegues', email: 'heltondiegues@gmail.com', password: 'heltonchacara', welcomed: false };
   db.users.push(admin, gestor, motorista, helton);
-  const chacara = { id: uid(), slug: 'chacara', name: 'Chácara', uf: 'MG', logo_url: './logos/chacara.png', plan: 'free', modules: ['frotas'], created_at: now() };
+  const chacara = { id: uid(), slug: 'chacara', name: 'Chácara', uf: 'MG', logo_url: './logos/chacara.png', ibge: '3115904', lat: -21.6728, lng: -43.2207, plan: 'free', modules: ['frotas'], created_at: now() };
   db.tenants.push(chacara);
   db.members.push({ user_id: helton.id, tenant_id: chacara.id, role: 'geral' }, { user_id: gestor.id, tenant_id: chacara.id, role: 'geral' }, { user_id: motorista.id, tenant_id: chacara.id, role: 'motorista' });
   seedFleet(db, chacara.id, motorista.id);
+  [['Prefeitura Municipal (exemplo)', 'prefeitura', 'Gabinete', -21.6731, -43.2216], ['UBS Central (exemplo)', 'saude', 'Saúde', -21.6712, -43.2242],
+    ['Escola Municipal (exemplo)', 'educacao', 'Educação', -21.6748, -43.2250], ['Garagem da frota (exemplo)', 'garagem', '', -21.6766, -43.2172],
+    ['Pátio de obras (exemplo)', 'obras', 'Obras', -21.6790, -43.2195]]
+    .forEach(([name, kind, secretaria, lat, lng]) => db.places.push({ id: uid(), tenant_id: chacara.id, name, kind, secretaria, lat, lng }));
   [['Auto Elétrica Chácara (exemplo)', 'Auto elétrica'], ['Mecânica Diesel São João (exemplo)', 'Oficina mecânica'], ['Concessionária VW Juiz de Fora (exemplo)', 'Concessionária']]
     .forEach(([name, kind]) => db.suppliers.push({ id: uid(), tenant_id: chacara.id, name, kind, doc: '', phone: '' }));
   return db;
@@ -137,8 +141,8 @@ export const demo = {
     return db.orders.filter((o) => o.tenant_id === tenant_id && (!onlyUser || o.created_by === onlyUser))
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
   },
-  async createOrder({ tenant_id, vehicle_id, title, description, priority, km, by, type = 'Corretiva', forms = {} }) {
-    const o = { id: uid(), tenant_id, vehicle_id, title, description, priority, type, forms, oficina: '', value: 0, closed: false, stage: 0, tasks: tasksFor(0),
+  async createOrder({ tenant_id, vehicle_id, title, description, priority, km, by, type = 'Corretiva', forms = {}, lat = null, lng = null }) {
+    const o = { id: uid(), tenant_id, vehicle_id, title, description, priority, type, forms, lat, lng, oficina: '', value: 0, closed: false, stage: 0, tasks: tasksFor(0),
       created_by: by, created_at: now(), history: [{ at: now(), text: `Ocorrência registrada${km ? ` (km ${km})` : ''}` }] };
     db.orders.push(o);
     const v = db.vehicles.find((x) => x.id === vehicle_id); if (v) { v.status = 'manutencao'; if (km) v.km = Number(km); }
@@ -163,6 +167,9 @@ export const demo = {
     const v = db.vehicles.find((x) => x.id === m.vehicle_id); if (v) { v.status = 'disponivel'; v.km = Math.max(v.km, Number(km_in)); }
     save();
   },
+  async places(tenant_id) { return (db.places || []).filter((x) => x.tenant_id === tenant_id); },
+  async addPlace(x) { const p = { id: uid(), ...x }; (db.places ||= []).push(p); save(); return p; },
+  async updatePlace(id, patch) { Object.assign(db.places.find((x) => x.id === id), patch); save(); },
   async suppliers(tenant_id) { return (db.suppliers || []).filter((x) => x.tenant_id === tenant_id).sort((a, b) => a.name.localeCompare(b.name)); },
   async addSupplier(x) { const s = { id: uid(), ...x }; (db.suppliers ||= []).push(s); save(); return s; },
   async fuel(tenant_id) { return db.fuel.filter((f) => f.tenant_id === tenant_id); },

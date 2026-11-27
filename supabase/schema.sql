@@ -177,3 +177,18 @@ alter table suppliers enable row level security;
 create policy s_read on suppliers for select using (is_admin() or role_in(tenant_id) is not null);
 create policy s_write on suppliers for all using (is_admin() or role_in(tenant_id) = 'geral') with check (is_admin() or role_in(tenant_id) = 'geral');
 grant select, insert, update, delete on suppliers to authenticated;
+
+-- Mapa da cidade: código IBGE e centro do município, local das ocorrências e prédios públicos
+alter table tenants add column if not exists ibge text, add column if not exists lat double precision, add column if not exists lng double precision;
+alter table orders add column if not exists lat double precision, add column if not exists lng double precision;
+create table if not exists places (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references tenants on delete cascade,
+  name text not null, kind text default 'outro', secretaria text,
+  lat double precision not null, lng double precision not null,
+  created_at timestamptz default now()
+);
+alter table places enable row level security;
+create policy p_read on places for select using (is_admin() or role_in(tenant_id) is not null);
+create policy p_write on places for all using (is_admin() or role_in(tenant_id) = 'geral') with check (is_admin() or role_in(tenant_id) = 'geral');
+grant select, insert, update, delete on places to authenticated;

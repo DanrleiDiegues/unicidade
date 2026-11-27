@@ -3,9 +3,17 @@ import { Truck, Wrench, AlertTriangle, Fuel } from 'lucide-react';
 import { api } from '../lib/api';
 import { MODULES, STAGES } from '../lib/catalog';
 import { Kpi, ModIcon, brl } from '../ui';
+import { clima, ibgeIndicadores, tempo, fmtNum } from '../lib/cityData';
+import { Map as MapIcon } from 'lucide-react';
 
 export default function Hub({ tenant, user, onOpen }) {
   const [d, setD] = useState(null);
+  const [wx, setWx] = useState(null); const [ind, setInd] = useState(null);
+  useEffect(() => {
+    if (tenant.lat) clima(tenant.lat, tenant.lng).then(setWx).catch(() => {});
+    if (tenant.ibge) ibgeIndicadores(tenant.ibge).then(setInd).catch(() => {});
+  }, [tenant.lat, tenant.lng, tenant.ibge]);
+  const popI = ind?.find((x) => x.id === 29171);
   const hasFrotas = tenant.modules?.includes('frotas');
 
   useEffect(() => {
@@ -32,6 +40,14 @@ export default function Hub({ tenant, user, onOpen }) {
         </div>
         <span className="badge">{tenant.plan === 'trial' ? 'Período de teste' : 'Plano gratuito'}</span>
       </div>
+
+      {(wx?.current || popI) && (
+        <button className="glass city-now" onClick={() => onOpen('mapa')}>
+          {wx?.current && <div className="cn-wx"><span>{tempo(wx.current.weather_code, wx.current.is_day).ico}</span><div><b>{Math.round(wx.current.temperature_2m)}°C</b><small>{tempo(wx.current.weather_code, wx.current.is_day).txt} · máx {Math.round(wx.daily.temperature_2m_max[0])}° mín {Math.round(wx.daily.temperature_2m_min[0])}° · chuva {wx.daily.precipitation_probability_max[0]}%</small></div></div>}
+          {popI?.valor && <div className="cn-pop"><b>{fmtNum(popI.valor)}</b><small>habitantes (IBGE {popI.ano})</small></div>}
+          <span className="cn-go"><MapIcon size={16} />Abrir mapa da cidade →</span>
+        </button>
+      )}
 
       {hasFrotas && d?.vehicles && (
         <div className="grid kpis">

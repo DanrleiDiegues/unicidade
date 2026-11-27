@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { STAGES, MAINT_TYPES } from '../lib/catalog';
 import { GRAVIDADE } from '../forms';
 import { Modal, fmtDate } from '../ui';
+import { PointPicker } from './Mapa';
 import { OrderView } from './Frotas';
 import Guide from './Guide';
 
@@ -50,13 +51,13 @@ export default function Motorista({ tenant, user, notify }) {
 // Formulário 01 · SMC: é a própria abertura da ocorrência (motorista ou gestão).
 export function NewSmc({ tenant, user, vehicles, count, onClose, onDone }) {
   const today = new Date().toLocaleDateString('sv-SE'); // AAAA-MM-DD no fuso local
-  const [f, setF] = useState({ vehicle_id: vehicles[0]?.id, setor: '', motorista: user.name, km: '', title: '', defeito: '', gravidade: 'media', type: 'Corretiva' });
+  const [f, setF] = useState({ vehicle_id: vehicles[0]?.id, setor: '', motorista: user.name, km: '', title: '', defeito: '', gravidade: 'media', type: 'Corretiva', pt: null });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   const numero = `${new Date().getFullYear()}/${String(count + 1).padStart(4, '0')}`;
   async function submit(e) {
     e.preventDefault();
     const data = { numero, data: today, setor: f.setor, motorista: f.motorista, hodometro: f.km, defeito: f.defeito || f.title, gravidade: f.gravidade, ass_motorista: { nome: f.motorista, ok: true, em: new Date().toISOString() } };
-    await api.createOrder({ tenant_id: tenant.id, vehicle_id: f.vehicle_id, title: f.title, description: f.defeito, priority: f.gravidade, km: f.km, type: f.type, by: user.id,
+    await api.createOrder({ tenant_id: tenant.id, vehicle_id: f.vehicle_id, title: f.title, description: f.defeito, priority: f.gravidade, km: f.km, type: f.type, by: user.id, lat: f.pt?.lat ?? null, lng: f.pt?.lng ?? null,
       forms: { smc: { data, done: false, at: new Date().toISOString() } } });
     onDone();
   }
@@ -74,6 +75,7 @@ export function NewSmc({ tenant, user, vehicles, count, onClose, onDone }) {
         </div>
         <label className="f">Resumo do problema<input className="input" required placeholder="Barulho no freio traseiro" value={f.title} onChange={set('title')} /></label>
         <label className="f">Descrição do defeito<textarea className="input" rows={3} value={f.defeito} onChange={set('defeito')} /></label>
+        {tenant.lat && <div className="f">Onde está o problema? (aparece no mapa da cidade)<PointPicker tenant={tenant} value={f.pt} onChange={(pt) => setF((x) => ({ ...x, pt }))} /></div>}
         <div className="f"><span>Classificação da gravidade</span>{GRAVIDADE.map(([v, l]) => (
           <label key={v} style={{ display: 'flex', gap: 8, color: 'var(--text)' }}><input type="radio" name="grav" checked={f.gravidade === v} onChange={() => setF({ ...f, gravidade: v })} />{l}</label>))}</div>
         <button className="btn primary">Abrir OS</button>
