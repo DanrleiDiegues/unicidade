@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Plus, Wrench } from 'lucide-react';
 import { api } from '../lib/api';
 import { STAGES, MAINT_TYPES } from '../lib/catalog';
+import { GRAVIDADE } from '../forms';
 import { Modal, fmtDate } from '../ui';
 import { OrderView } from './Frotas';
 
@@ -17,17 +18,12 @@ export default function Motorista({ tenant, user, notify }) {
   }, [tenant.id, user.id]);
   useEffect(() => { load(); }, [load]);
 
-  async function submit(e) {
-    e.preventDefault();
-    await api.createOrder({ ...form, tenant_id: tenant.id, by: user.id });
-    setForm(null); notify('Ocorrência registrada. A gestão da frota já foi avisada.'); load();
-  }
 
   return (
     <>
       <div className="hero">
         <div><div className="eyebrow">{tenant.name} · UNIfrotas · Motorista</div><h1>Minhas ocorrências</h1></div>
-        <button className="btn primary" onClick={() => setForm({ vehicle_id: vehicles[0]?.id, title: '', description: '', priority: 'media', km: '', type: 'Corretiva' })}><Plus size={16} />Registrar ocorrência</button>
+        <button className="btn primary" onClick={() => setForm(true)}><Plus size={16} />Registrar ocorrência</button>
       </div>
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
         {orders.map((o) => {
@@ -44,24 +40,42 @@ export default function Motorista({ tenant, user, notify }) {
         {!orders.length && <div className="glass card muted">Nenhuma ocorrência registrada ainda.</div>}
       </div>
 
-      {form && (
-        <Modal title="Registrar ocorrência" onClose={() => setForm(null)}>
-          <form className="form" onSubmit={submit}>
-            <label className="f">Veículo<select className="input" value={form.vehicle_id} onChange={(e) => setForm({ ...form, vehicle_id: e.target.value })}>
-              {vehicles.map((v) => <option key={v.id} value={v.id}>{v.plate} · {v.model}</option>)}</select></label>
-            <label className="f">O que aconteceu?<input className="input" required placeholder="Ex.: barulho no freio" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></label>
-            <label className="f">Tipo<select className="input" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>{MAINT_TYPES.map((t) => <option key={t}>{t}</option>)}</select></label>
-            <label className="f">Detalhes<textarea className="input" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label>
-            <div className="cols">
-              <label className="f">Km atual<input className="input" type="number" value={form.km} onChange={(e) => setForm({ ...form, km: e.target.value })} /></label>
-              <label className="f">Prioridade<select className="input" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
-                <option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta — veículo parado</option></select></label>
-            </div>
-            <button className="btn primary">Enviar</button>
-          </form>
-        </Modal>
-      )}
-      {sel && <Modal title={sel.title} onClose={() => setSel(null)}><OrderView order={sel} vehicle={vehicles.find((v) => v.id === sel.vehicle_id)} /></Modal>}
+      {form && <NewSmc tenant={tenant} user={user} vehicles={vehicles} count={orders.length} onClose={() => setForm(null)} onDone={() => { setForm(null); notify('Ocorrência registrada (Formulário 01 · SMC). A gestão da frota já foi avisada.'); load(); }} />}
+      {sel && <Modal title={sel.title} onClose={() => setSel(null)}><OrderView order={sel} tenant={tenant} vehicle={vehicles.find((v) => v.id === sel.vehicle_id)} /></Modal>}
     </>
+  );
+}
+
+// Formulário 01 · SMC: é a própria abertura da ocorrência (motorista ou gestão).
+export function NewSmc({ tenant, user, vehicles, count, onClose, onDone }) {
+  const today = new Date().toLocaleDateString('sv-SE'); // AAAA-MM-DD no fuso local
+  const [f, setF] = useState({ vehicle_id: vehicles[0]?.id, setor: '', motorista: user.name, km: '', title: '', defeito: '', gravidade: 'media', type: 'Corretiva' });
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const numero = `${new Date().getFullYear()}/${String(count + 1).padStart(4, '0')}`;
+  async function submit(e) {
+    e.preventDefault();
+    const data = { numero, data: today, setor: f.setor, motorista: f.motorista, hodometro: f.km, defeito: f.defeito || f.title, gravidade: f.gravidade, ass_motorista: { nome: f.motorista, ok: true, em: new Date().toISOString() } };
+    await api.createOrder({ tenant_id: tenant.id, vehicle_id: f.vehicle_id, title: f.title, description: f.defeito, priority: f.gravidade, km: f.km, type: f.type, by: user.id,
+      forms: { smc: { data, done: false, at: new Date().toISOString() } } });
+    onDone();
+  }
+  return (
+    <Modal title={`Formulário 01 · SMC nº ${numero}`} onClose={onClose}>
+      <form className="form" onSubmit={submit}>
+        <label className="f">Veículo<select className="input" value={f.vehicle_id} onChange={set('vehicle_id')}>
+          {vehicles.map((v) => <option key={v.id} value={v.id}>{v.plate} · {v.model}</option>)}</select></label>
+        <div className="cols">
+          <label className="f">Setor solicitante<input className="input" required value={f.setor} onChange={set('setor')} /></label>
+          <label className="f">Motorista<input className="input" required value={f.motorista} onChange={set('motorista')} /></label>
+          <label className="f">Hodômetro (km)<input className="input" type="number" value={f.km} onChange={set('km')} /></label>
+          <label className="f">Tipo<select className="input" value={f.type} onChange={set('type')}>{MAINT_TYPES.map((t) => <option key={t}>{t}</option>)}</select></label>
+        </div>
+        <label className="f">Resumo do problema<input className="input" required placeholder="Barulho no freio traseiro" value={f.title} onChange={set('title')} /></label>
+        <label className="f">Descrição do defeito<textarea className="input" rows={3} value={f.defeito} onChange={set('defeito')} /></label>
+        <div className="f"><span>Classificação da gravidade</span>{GRAVIDADE.map(([v, l]) => (
+          <label key={v} style={{ display: 'flex', gap: 8, color: 'var(--text)' }}><input type="radio" name="grav" checked={f.gravidade === v} onChange={() => setF({ ...f, gravidade: v })} />{l}</label>))}</div>
+        <button className="btn primary">Enviar SMC</button>
+      </form>
+    </Modal>
   );
 }

@@ -67,8 +67,8 @@ export const supa = {
     if (onlyUser) q = q.eq('created_by', onlyUser);
     return ok(await q);
   },
-  async createOrder({ tenant_id, vehicle_id, title, description, priority, km, by, type = 'Corretiva' }) {
-    const o = ok(await sb.from('orders').insert({ tenant_id, vehicle_id, title, description, priority, type, stage: 0,
+  async createOrder({ tenant_id, vehicle_id, title, description, priority, km, by, type = 'Corretiva', forms = {} }) {
+    const o = ok(await sb.from('orders').insert({ tenant_id, vehicle_id, title, description, priority, type, forms, stage: 0,
       tasks: tasks0(), created_by: by, history: [{ at: new Date().toISOString(), text: `Ocorrência registrada${km ? ` (km ${km})` : ''}` }] }).select().single());
     await sb.from('vehicles').update({ status: 'manutencao', ...(km ? { km: Number(km) } : {}) }).eq('id', vehicle_id);
     return o;

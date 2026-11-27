@@ -162,3 +162,6 @@ end $$;
 -- Brasão da cidade (26/11/2026)
 alter table tenants add column if not exists logo_url text;
 update tenants set logo_url = '/logos/chacara.png' where slug = 'chacara';
+
+-- Formulários 01, 02 e 03 dentro da ocorrência (26/11/2026)
+alter table orders add column if not exists forms jsonb not null default '{}';

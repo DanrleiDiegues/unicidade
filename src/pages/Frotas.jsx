@@ -1,10 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, Wrench, Car, Fuel, CheckCircle2, Circle, ChevronRight, ChevronLeft, ArrowLeftRight, Check, Ban } from 'lucide-react';
 import { api } from '../lib/api';
-import { STAGES, VEHICLE_TYPES, VEHICLE_STATUS } from '../lib/catalog';
+import { STAGES, VEHICLE_TYPES, VEHICLE_STATUS, FORM_TASK } from '../lib/catalog';
+import { FORMS, FormModal } from '../forms';
+import { NewSmc } from './Motorista';
 import { Modal, fmtDate, brl } from '../ui';
 
-export function OrderView({ order, vehicle, editable, onChange }) {
+export function OrderView({ order, vehicle, tenant, editable, onChange }) {
+  const [form, setForm] = useState(null);
+  const saveForm = (f, data, done) => {
+    const forms = { ...(order.forms || {}), [f.key]: { data, done: done || order.forms?.[f.key]?.done || false, at: new Date().toISOString() } };
+    const tasks = done ? order.tasks.map((t) => (t.label === FORM_TASK[f.key] ? { ...t, done: true } : t)) : order.tasks;
+    onChange({ forms, tasks }, `${done ? 'Concluído' : 'Rascunho salvo'}: Formulário ${f.code} · ${f.title}`);
+    setForm(null);
+  };
   const stageTasks = order.tasks.filter((t) => t.stage === order.stage);
   const allDone = stageTasks.every((t) => t.done);
   const setTask = (id, patch, note) => onChange({ tasks: order.tasks.map((x) => (x.id === id ? { ...x, ...patch } : x)) }, note);
@@ -47,6 +56,19 @@ export function OrderView({ order, vehicle, editable, onChange }) {
             : <button className="btn primary sm" disabled={!allDone} onClick={() => onChange({ closed: true }, 'Manutenção concluída e paga')}><Check size={14} />Concluir</button>}
         </div>
       )}
+      <h4 style={{ marginBottom: 6 }}>Formulários</h4>
+      <div className="list">{FORMS.map((f) => {
+        const st = order.forms?.[f.key];
+        const here = f.stage === order.stage;
+        return (
+          <div key={f.key} className="row" style={{ opacity: f.stage > order.stage && !st ? 0.55 : 1, cursor: 'pointer' }} onClick={() => setForm(f)}>
+            <span className="badge">{f.code}</span>
+            <div className="grow"><b style={{ fontSize: 14 }}>{f.title}</b><small>Etapa {f.stage + 1} · {STAGES[f.stage].name}{here ? ' · etapa atual' : ''}</small></div>
+            <span className={`badge ${st?.done ? 'on' : st ? 'prio-media' : 'soon'}`}>{st?.done ? 'concluído' : st ? 'rascunho' : 'pendente'}</span>
+          </div>
+        );
+      })}</div>
+      {form && <FormModal form={form} order={order} vehicle={vehicle} tenant={tenant} editable={editable && !order.closed} onSave={(d, done) => saveForm(form, d, done)} onClose={() => setForm(null)} />}
       <h4 style={{ marginBottom: 6 }}>Histórico</h4>
       <div className="list">{[...order.history].reverse().map((h, i) => <div key={i} className="muted" style={{ fontSize: 13 }}>{fmtDate(h.at)} — {h.text}</div>)}</div>
     </>
@@ -62,6 +84,7 @@ export default function Frotas({ tenant, user, notify }) {
   const [newCar, setNewCar] = useState(null);
   const [moves, setMoves] = useState([]);
   const [mv, setMv] = useState(null);
+  const [smc, setSmc] = useState(false);
 
   const load = useCallback(async () => {
     const [v, o, f, m] = await Promise.all([api.vehicles(tenant.id), api.orders(tenant.id), api.fuel(tenant.id), api.moves(tenant.id)]);
@@ -79,12 +102,16 @@ export default function Frotas({ tenant, user, notify }) {
     <>
       <div className="hero">
         <div><div className="eyebrow">{tenant.name} · UNIfrotas</div><h1>Gestão da frota <span>· {vehicles.length} veículos</span></h1></div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <button className="btn primary" onClick={() => setSmc(true)}><Plus size={16} />Nova SMC</button>
         <div className="tabs glass" style={{ padding: 5, margin: 0 }}>
           {[['manut', 'Manutenção', Wrench], ['mov', 'Movimentações', ArrowLeftRight], ['veic', 'Veículos', Car], ['fuel', 'Abastecimento', Fuel]].map(([k, l, I]) => (
             <button key={k} className={`btn sm ${tab === k ? 'primary' : 'ghost'}`} onClick={() => setTab(k)}><I size={14} />{l}</button>
           ))}
         </div>
+        </div>
       </div>
+      {smc && <NewSmc tenant={tenant} user={user} vehicles={vehicles} count={orders.length} onClose={() => setSmc(false)} onDone={() => { setSmc(false); notify('SMC registrada na etapa Solicitação.'); load(); }} />}
 
       {tab === 'manut' && (
         <div className="kanban">
@@ -146,7 +173,7 @@ export default function Frotas({ tenant, user, notify }) {
         </div>
       )}
 
-      {sel && <Modal title={sel.title} onClose={() => setSel(null)}><OrderView order={sel} vehicle={vOf(sel.vehicle_id)} editable onChange={update} /></Modal>}
+      {sel && <Modal title={sel.title} onClose={() => setSel(null)}><OrderView order={sel} vehicle={vOf(sel.vehicle_id)} tenant={tenant} editable onChange={update} /></Modal>}
       {mv && (
         <Modal title="Registrar saída de veículo" onClose={() => setMv(null)}>
           <form className="form" onSubmit={saveMove}>

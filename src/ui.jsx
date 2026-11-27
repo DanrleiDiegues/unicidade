@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import {
   Truck, HeartPulse, GraduationCap, Construction, Landmark, HandHeart, Map, Sparkles, X,
 } from 'lucide-react';
@@ -40,7 +41,8 @@ export function Backdrop() {
 }
 
 export function Modal({ title, onClose, children }) {
-  return (
+  // Portal: abre sempre por cima da página, mesmo quando um modal abre outro.
+  return createPortal(
     <div className="modal-bg" onClick={onClose}>
       <div className="modal glass" onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -49,7 +51,8 @@ export function Modal({ title, onClose, children }) {
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

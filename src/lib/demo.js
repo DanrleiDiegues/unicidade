@@ -2,7 +2,7 @@
 // Tem as mesmas funções do adaptador Supabase (supa.js), então as telas não mudam.
 import { STAGES } from './catalog';
 
-const KEY = 'unicidade-demo-v3';
+const KEY = 'unicidade-demo-v4';
 const uid = () => Math.random().toString(36).slice(2, 10);
 const now = () => new Date().toISOString();
 const daysAgo = (d) => new Date(Date.now() - d * 864e5).toISOString();
@@ -135,8 +135,8 @@ export const demo = {
     return db.orders.filter((o) => o.tenant_id === tenant_id && (!onlyUser || o.created_by === onlyUser))
       .sort((a, b) => b.created_at.localeCompare(a.created_at));
   },
-  async createOrder({ tenant_id, vehicle_id, title, description, priority, km, by, type = 'Corretiva' }) {
-    const o = { id: uid(), tenant_id, vehicle_id, title, description, priority, type, oficina: '', value: 0, closed: false, stage: 0, tasks: tasksFor(0),
+  async createOrder({ tenant_id, vehicle_id, title, description, priority, km, by, type = 'Corretiva', forms = {} }) {
+    const o = { id: uid(), tenant_id, vehicle_id, title, description, priority, type, forms, oficina: '', value: 0, closed: false, stage: 0, tasks: tasksFor(0),
       created_by: by, created_at: now(), history: [{ at: now(), text: `Ocorrência registrada${km ? ` (km ${km})` : ''}` }] };
     db.orders.push(o);
     const v = db.vehicles.find((x) => x.id === vehicle_id); if (v) { v.status = 'manutencao'; if (km) v.km = Number(km); }
