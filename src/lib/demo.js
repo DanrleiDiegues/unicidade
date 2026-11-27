@@ -134,9 +134,9 @@ export const demo = {
   },
   // Administração da plataforma
   async tenants() { return db.tenants.map((t) => ({ ...t, users: db.members.filter((m) => m.tenant_id === t.id).length })); },
-  async createTenant({ name, slug, uf, modules }) {
+  async createTenant({ name, slug, uf, modules, ibge = null, lat = null, lng = null, logo_url = null }) {
     if (db.tenants.some((t) => t.slug === slug)) throw new Error('Já existe uma cidade com esse endereço.');
-    const t = { id: uid(), name, slug, uf, plan: 'free', modules, created_at: now() }; db.tenants.push(t); save(); return t;
+    const t = { id: uid(), name, slug, uf, plan: 'free', modules, ibge, lat, lng, logo_url, created_at: now() }; db.tenants.push(t); save(); return t;
   },
   async updateTenant(id, patch) { Object.assign(db.tenants.find((t) => t.id === id), patch); save(); },
   async members(tenant_id) {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Building2, Users, Mail, ExternalLink, RotateCcw } from 'lucide-react';
+import { Plus, Building2, Users, Mail, ExternalLink, RotateCcw, Pencil, MapPin, Upload, Check, Loader } from 'lucide-react';
+import { UFS, ibgeMunicipios, localizarCidade, brasaoDataUrl } from '../lib/cityData';
 import { api } from '../lib/api';
 import { MODULES, ROLES } from '../lib/catalog';
 import { Kpi, Modal, fmtDate } from '../ui';
@@ -26,7 +27,12 @@ export default function Admin({ notify, onOpenTenant, refresh }) {
   };
   const saveCity = async (e) => {
     e.preventDefault();
-    try { await api.createTenant({ ...city, slug: city.slug || slugify(city.name) }); setCity(null); notify('Cidade criada.'); load(); } catch (x) { notify(x.message); }
+    const { id, users, created_at, plan, ...data } = city; // eslint-disable-line no-unused-vars
+    try {
+      if (id) { await api.updateTenant(id, { name: data.name, uf: data.uf, ibge: data.ibge || null, lat: data.lat ?? null, lng: data.lng ?? null, logo_url: data.logo_url || null }); notify('Cidade atualizada.'); }
+      else { await api.createTenant({ ...data, slug: data.slug || slugify(data.name) }); notify('Cidade criada.'); }
+      setCity(null); load();
+    } catch (x) { notify(x.message); }
   };
   const sendInvite = async (e) => {
     e.preventDefault();
@@ -56,7 +62,11 @@ export default function Admin({ notify, onOpenTenant, refresh }) {
             {tenants.map((t) => (
               <div key={t.id} className="glass card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <div><h3 style={{ marginBottom: 4 }}>{t.name} · {t.uf}</h3><small className="muted">{t.slug}.unicidade.com.br · {t.users} usuários</small></div>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    {t.logo_url ? <img src={t.logo_url} alt="" style={{ height: 40 }} /> : <div className="brasao-vazio">sem brasão</div>}
+                    <div><h3 style={{ marginBottom: 4 }}>{t.name} · {t.uf}</h3><small className="muted">{t.slug}.unicidade.com.br · {t.users} usuários</small>
+                      <small style={{ display: 'block', color: t.ibge ? '#16a34a' : '#d97706' }}>{t.ibge ? `IBGE ${t.ibge} · mapa configurado` : 'Sem código IBGE: mapa e números vazios'}</small></div>
+                  </div>
                   <span className="badge">{t.plan}</span>
                 </div>
                 <div className="chips" style={{ margin: '14px 0' }}>
@@ -67,6 +77,7 @@ export default function Admin({ notify, onOpenTenant, refresh }) {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button className="btn sm" onClick={() => onOpenTenant(t.id)}><ExternalLink size={14} />Abrir</button>
                   <button className="btn sm" onClick={() => setInv({ name: '', email: '', tenant_id: t.id, role: 'geral' })}><Plus size={14} />Usuário</button>
+                  <button className="btn sm" onClick={() => setCity({ ...t })}><Pencil size={14} />Editar</button>
                 </div>
               </div>
             ))}
@@ -92,19 +103,8 @@ export default function Admin({ notify, onOpenTenant, refresh }) {
       )}
 
       {city && (
-        <Modal title="Nova cidade" onClose={() => setCity(null)}>
-          <form className="form" onSubmit={saveCity}>
-            <div className="cols">
-              <label className="f">Nome<input className="input" required value={city.name} onChange={(e) => setCity({ ...city, name: e.target.value, slug: slugify(e.target.value) })} /></label>
-              <label className="f">UF<input className="input" maxLength={2} value={city.uf} onChange={(e) => setCity({ ...city, uf: e.target.value.toUpperCase() })} /></label>
-            </div>
-            <label className="f">Endereço<input className="input" value={city.slug} onChange={(e) => setCity({ ...city, slug: slugify(e.target.value) })} /><small>{city.slug || 'cidade'}.unicidade.com.br</small></label>
-            <div className="chips">{MODULES.map((m) => (
-              <button type="button" key={m.key} className={`badge ${city.modules.includes(m.key) ? 'on' : 'soon'}`} style={{ cursor: 'pointer' }}
-                onClick={() => setCity({ ...city, modules: city.modules.includes(m.key) ? city.modules.filter((k) => k !== m.key) : [...city.modules, m.key] })}>
-                {city.modules.includes(m.key) ? '✓ ' : ''}{m.name}</button>))}</div>
-            <button className="btn primary">Criar cidade</button>
-          </form>
+        <Modal title={city.id ? `Editar · ${city.name}` : 'Nova cidade'} onClose={() => setCity(null)}>
+          <CityForm city={city} setCity={setCity} onSubmit={saveCity} />
         </Modal>
       )}
       {inv && (
@@ -122,5 +122,54 @@ export default function Admin({ notify, onOpenTenant, refresh }) {
         </Modal>
       )}
     </>
+  );
+}
+
+function CityForm({ city, setCity, onSubmit }) {
+  const [muns, setMuns] = useState([]);
+  const [st, setSt] = useState({ busy: false, msg: '', ok: !!city.ibge });
+  useEffect(() => { ibgeMunicipios(city.uf).then(setMuns).catch(() => setMuns([])); }, [city.uf]);
+  async function localizar(nome = city.name, uf = city.uf) {
+    if (!nome || !uf) return;
+    setSt({ busy: true, msg: 'Buscando no IBGE…', ok: false });
+    try {
+      const r = await localizarCidade(nome, uf);
+      setCity((c) => ({ ...c, name: r.nome, ibge: r.ibge, lat: r.lat, lng: r.lng, slug: c.id ? c.slug : slugify(r.nome) }));
+      setSt({ busy: false, ok: true, msg: `IBGE ${r.ibge} · centro ${r.lat?.toFixed(4)}, ${r.lng?.toFixed(4)} (${r.fonte})` });
+    } catch (x) { setSt({ busy: false, ok: false, msg: x.message }); }
+  }
+  async function brasao(e) {
+    const f = e.target.files?.[0]; if (!f) return;
+    try { const logo_url = await brasaoDataUrl(f); setCity((c) => ({ ...c, logo_url })); } catch (x) { setSt((s) => ({ ...s, msg: x.message })); }
+  }
+  return (
+    <form className="form" onSubmit={onSubmit}>
+      <div className="cols">
+        <label className="f">Nome do município<input className="input" required list="uc-muns" value={city.name}
+          onChange={(e) => setCity({ ...city, name: e.target.value, ibge: null, slug: city.id ? city.slug : slugify(e.target.value) })}
+          onBlur={() => !city.ibge && localizar()} /></label>
+        <label className="f">UF<select className="input" value={city.uf} onChange={(e) => { setCity({ ...city, uf: e.target.value, ibge: null }); setSt({ busy: false, ok: false, msg: '' }); }}>{UFS.map((u) => <option key={u}>{u}</option>)}</select></label>
+      </div>
+      <datalist id="uc-muns">{muns.map((m) => <option key={m.id} value={m.nome} />)}</datalist>
+      <div className={`ibge-box ${st.ok || city.ibge ? 'ok' : ''}`}>
+        {st.busy ? <Loader size={14} className="spin" /> : city.ibge ? <Check size={14} /> : <MapPin size={14} />}
+        <span>{st.msg || (city.ibge ? `IBGE ${city.ibge} · centro ${city.lat}, ${city.lng}` : 'O código IBGE e o centro do mapa são preenchidos sozinhos ao escolher o município.')}</span>
+        <button type="button" className="btn sm ghost" onClick={() => localizar()} disabled={st.busy || !city.name}>Buscar no IBGE</button>
+      </div>
+      {!city.id && <label className="f">Endereço<input className="input" value={city.slug} onChange={(e) => setCity({ ...city, slug: slugify(e.target.value) })} /><small>{city.slug || 'cidade'}.unicidade.com.br</small></label>}
+      <div className="f">Brasão da prefeitura
+        <div className="brasao-up">
+          {city.logo_url ? <img src={city.logo_url} alt="Brasão" /> : <div className="brasao-vazio">sem brasão</div>}
+          <label className="btn sm"><Upload size={14} />{city.logo_url ? 'Trocar imagem' : 'Enviar imagem'}<input type="file" accept="image/*" hidden onChange={brasao} /></label>
+          {city.logo_url && <button type="button" className="btn sm ghost" onClick={() => setCity({ ...city, logo_url: null })}>Remover</button>}
+        </div>
+        <small className="muted">PNG com fundo transparente fica melhor. A imagem é reduzida para 256 px.</small>
+      </div>
+      {!city.id && <div className="chips">{MODULES.map((m) => (
+        <button type="button" key={m.key} className={`badge ${city.modules.includes(m.key) ? 'on' : 'soon'}`} style={{ cursor: 'pointer' }}
+          onClick={() => setCity({ ...city, modules: city.modules.includes(m.key) ? city.modules.filter((k) => k !== m.key) : [...city.modules, m.key] })}>
+          {city.modules.includes(m.key) ? '✓ ' : ''}{m.name}</button>))}</div>}
+      <button className="btn primary" disabled={st.busy}>{city.id ? 'Salvar cidade' : 'Criar cidade'}</button>
+    </form>
   );
 }

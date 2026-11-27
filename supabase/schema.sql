@@ -228,3 +228,7 @@ create table if not exists employees (
 alter table employees enable row level security;
 create policy e_all on employees for all using (is_admin() or role_in(tenant_id) = 'geral') with check (is_admin() or role_in(tenant_id) = 'geral');
 grant select, insert, update, delete on employees to authenticated;
+
+-- Perfis por área (além de geral e motorista)
+alter table members drop constraint if exists members_role_check;
+alter table members add constraint members_role_check check (role in ('geral','motorista','saude','educacao'));
