@@ -7,7 +7,16 @@ import { STAGES } from './catalog';
 // Link de convite ou de recuperação: a pessoa entra logada e precisa definir a senha.
 const needsPassword = /type=(invite|recovery)/.test(location.hash);
 const sb = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
-const ok = ({ data, error }) => { if (error) throw new Error(error.message); return data; };
+// Mensagens do Supabase em português
+const PT = [
+  [/rate limit/i, 'Muitos e-mails enviados agora. Aguarde alguns minutos e tente de novo.'],
+  [/invalid login credentials/i, 'E-mail ou senha inválidos.'],
+  [/already registered|already been registered/i, 'Este e-mail já tem conta. Use a aba Entrar ou "Esqueci minha senha".'],
+  [/email not confirmed/i, 'Confirme seu e-mail pelo link que enviamos antes de entrar.'],
+  [/password should be at least/i, 'A senha precisa ter pelo menos 6 caracteres.'],
+];
+const pt = (m) => (PT.find(([r]) => r.test(m)) || [null, m])[1];
+const ok = ({ data, error }) => { if (error) throw new Error(pt(error.message)); return data; };
 const tasks0 = () => STAGES.flatMap((s, i) => s.tasks.map((label) => ({ id: crypto.randomUUID(), stage: i, label, done: false })));
 const fn = (name, body) => sb.functions.invoke(name, { body }).then(ok);
 // E-mails personalizados são opcionais: se a função ainda não existir, o login segue normalmente.
@@ -34,6 +43,7 @@ export const supa = {
     return { ...s, welcomeSent };
   },
   async signOut() { await sb.auth.signOut(); },
+  async resetPassword(email) { ok(await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin })); },
   async signUp({ name, email, password, city }) {
     const { session } = ok(await sb.auth.signUp({ email, password, options: { data: { name } } }));
     if (!session) throw new Error('Conta criada! Confirme pelo link enviado ao seu e-mail e depois entre.');

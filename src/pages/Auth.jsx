@@ -9,10 +9,16 @@ export default function Auth({ onAuthed }) {
   const [f, setF] = useState({ name: '', email: '', password: '', city: '' });
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [info, setInfo] = useState('');
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
   async function submit(e) {
-    e.preventDefault(); setErr(''); setBusy(true);
+    e.preventDefault(); setErr(''); setInfo(''); setBusy(true);
+    if (mode === 'forgot') {
+      try { await api.resetPassword(f.email); setInfo('Enviamos um link para o seu e-mail. Abra-o para criar uma nova senha.'); }
+      catch (x) { setErr(x.message); } finally { setBusy(false); }
+      return;
+    }
     try { onAuthed(mode === 'login' ? await api.signIn(f.email, f.password) : await api.signUp(f)); }
     catch (x) { setErr(x.message); } finally { setBusy(false); }
   }
@@ -35,13 +41,17 @@ export default function Auth({ onAuthed }) {
             <button type="button" className={`btn sm ${mode === 'login' ? 'primary' : ''}`} onClick={() => setMode('login')}>Entrar</button>
             <button type="button" className={`btn sm ${mode === 'signup' ? 'primary' : ''}`} onClick={() => setMode('signup')}>Criar conta grátis</button>
           </div>
-          <h2 style={{ margin: 0 }}>{mode === 'login' ? 'Bem-vindo de volta' : 'Teste grátis, sem cartão'}</h2>
+          <h2 style={{ margin: 0 }}>{mode === 'login' ? 'Bem-vindo de volta' : mode === 'forgot' ? 'Recuperar senha' : 'Teste grátis, sem cartão'}</h2>
+          {mode === 'forgot' && <p className="muted" style={{ margin: 0 }}>Informe seu e-mail e enviaremos um link para criar uma nova senha.</p>}
           {mode === 'signup' && <label className="f">Nome<input className="input" required value={f.name} onChange={set('name')} /></label>}
           {mode === 'signup' && <label className="f">Sua cidade<input className="input" placeholder="Ex.: Bicas" value={f.city} onChange={set('city')} /></label>}
           <label className="f">E-mail<input className="input" type="email" required value={f.email} onChange={set('email')} /></label>
-          <label className="f">Senha<input className="input" type="password" required minLength={6} value={f.password} onChange={set('password')} /></label>
+          {mode !== 'forgot' && <label className="f">Senha<input className="input" type="password" required minLength={6} value={f.password} onChange={set('password')} /></label>}
           {err && <div style={{ color: 'var(--bad)', fontSize: 14 }}>{err}</div>}
-          <button className="btn primary" disabled={busy}>{mode === 'login' ? 'Entrar' : 'Criar minha conta'}<ArrowRight size={16} /></button>
+          {info && <div style={{ color: 'var(--ok)', fontSize: 14 }}>{info}</div>}
+          <button className="btn primary" disabled={busy}>{mode === 'login' ? 'Entrar' : mode === 'forgot' ? 'Enviar link' : 'Criar minha conta'}<ArrowRight size={16} /></button>
+          {mode === 'login' && <button type="button" className="btn ghost sm" style={{ justifySelf: 'start', border: 0 }} onClick={() => { setMode('forgot'); setErr(''); }}>Esqueci minha senha</button>}
+          {mode === 'forgot' && <button type="button" className="btn ghost sm" style={{ justifySelf: 'start', border: 0 }} onClick={() => { setMode('login'); setInfo(''); }}>Voltar para o login</button>}
           {api.mode === 'demo' && mode === 'login' && (
             <div className="demo-hint">
               Modo demonstração (senha: <b>{DEMO_PASSWORD}</b>). Entrar como:

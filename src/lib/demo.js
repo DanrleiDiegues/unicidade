@@ -89,6 +89,7 @@ export const demo = {
   mode: 'demo',
   needsPassword: false,
   async setPassword() {},
+  async resetPassword() {},
   async session() { return current ? sessionOf(current) : null; },
   async signIn(email, password) {
     const u = db.users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());
