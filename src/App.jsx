@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { LayoutGrid, Truck, Shield, Sun, CloudFog, LogOut, Map as MapIcon, Users } from 'lucide-react';
 import { api } from './lib/api';
-import { canSee } from './lib/catalog';
+import { canSee, ROLES, isGeral } from './lib/catalog';
 import { Backdrop, Brand, initials } from './ui';
 import Auth, { SetPassword } from './pages/Auth';
 import Hub from './pages/Hub';
@@ -30,7 +30,7 @@ export default function App() {
     if (s.user.platform_admin) { setAllTenants(await api.tenants()); setView('admin'); return; }
     const m = s.memberships[0];
     setTenantId(m?.tenant_id || null);
-    setView(m?.role === 'motorista' ? 'frotas' : 'hub');
+    setView(m?.role === 'geral' ? 'hub' : (ROLES[m?.role]?.modules || [])[0] || 'hub');
   }
 
   if (session === undefined) return <Backdrop />;
@@ -56,9 +56,9 @@ export default function App() {
           </div>
         )}
         <nav className="pill-nav glass">
-          {m && role !== 'motorista' && <button className={view === 'hub' ? 'on' : ''} onClick={() => setView('hub')}><LayoutGrid size={15} />Visão geral</button>}
-          {m && role !== 'motorista' && <button className={view === 'mapa' ? 'on' : ''} onClick={() => setView('mapa')}><MapIcon size={15} />Mapa</button>}
-          {m && role === 'geral' && <button className={view === 'cidadaos' ? 'on' : ''} onClick={() => setView('cidadaos')}><Users size={15} />Cidadãos</button>}
+          {m && isGeral(role) && <button className={view === 'hub' ? 'on' : ''} onClick={() => setView('hub')}><LayoutGrid size={15} />Visão geral</button>}
+          {m && isGeral(role) && <button className={view === 'mapa' ? 'on' : ''} onClick={() => setView('mapa')}><MapIcon size={15} />Mapa</button>}
+          {m && isGeral(role) && <button className={view === 'cidadaos' ? 'on' : ''} onClick={() => setView('cidadaos')}><Users size={15} />Cidadãos</button>}
           {m && canSee(role, 'frotas') && m.tenant.modules?.includes('frotas') && <button className={view === 'frotas' ? 'on' : ''} onClick={() => setView('frotas')}><Truck size={15} />UNIfrotas</button>}
           {isAdmin && <button className={view === 'admin' ? 'on' : ''} onClick={async () => { setAllTenants(await api.tenants()); setView('admin'); }}><Shield size={15} />Admin</button>}
         </nav>
@@ -72,7 +72,7 @@ export default function App() {
           {theme === 'white' ? <CloudFog size={16} /> : <Sun size={16} />}{theme === 'white' ? 'Grey' : 'White'}
         </button>
         <div className="who glass">
-          <div style={{ textAlign: 'right' }}><div>{session.user.name}</div><small className="muted">{isAdmin ? 'Admin da plataforma' : role === 'motorista' ? 'Motorista' : 'Gestão geral'}</small></div>
+          <div style={{ textAlign: 'right' }}><div>{session.user.name}</div><small className="muted">{isAdmin ? 'Admin da plataforma' : ROLES[role]?.label || role}</small></div>
           <div className="avatar">{initials(session.user.name)}</div>
           <button className="btn ghost sm" title="Sair" onClick={async () => { await api.signOut(); setSession(null); setTenantId(null); }}><LogOut size={16} /></button>
         </div>
@@ -80,12 +80,13 @@ export default function App() {
 
       <main className="page">
         {view === 'admin' && isAdmin && <Admin notify={notify} onOpenTenant={openTenant} refresh={async () => setAllTenants(await api.tenants())} />}
-        {view === 'hub' && m && <Hub tenant={m.tenant} user={session.user} onOpen={(k) => k === 'frotas' || k === 'mapa' ? setView(k) : notify('Módulo em construção — em breve.')} />}
-        {view === 'cidadaos' && m && role === 'geral' && <Cidadaos tenant={m.tenant} user={session.user} notify={notify} />}
-        {view === 'mapa' && m && <Mapa tenant={m.tenant} role={role} notify={notify} onOpenFrotas={() => setView('frotas')} />}
+        {view === 'hub' && m && isGeral(role) && <Hub tenant={m.tenant} user={session.user} onOpen={(k) => k === 'frotas' || k === 'mapa' ? setView(k) : notify('Módulo em construção — em breve.')} />}
+        {view === 'cidadaos' && m && isGeral(role) && <Cidadaos tenant={m.tenant} user={session.user} notify={notify} />}
+        {view === 'mapa' && m && isGeral(role) && <Mapa tenant={m.tenant} role={role} notify={notify} onOpenFrotas={() => setView('frotas')} />}
         {view === 'frotas' && m && (role === 'motorista'
           ? <Motorista tenant={m.tenant} user={session.user} notify={notify} />
           : <Frotas tenant={m.tenant} user={session.user} notify={notify} />)}
+        {m && !isGeral(role) && view !== 'frotas' && <div className="glass card">O módulo de {ROLES[role]?.label || role} está em construção. Em breve ele aparece aqui.</div>}
         {!m && view !== 'admin' && <div className="glass card">Seu usuário ainda não está vinculado a nenhuma cidade.</div>}
       </main>
       {toast && <div className="toast glass">{toast}</div>}

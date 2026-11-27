@@ -12,10 +12,15 @@ export const MODULES = [
 
 // Papéis. 'geral' vê tudo da cidade; 'motorista' só registra e acompanha ocorrências no UNIfrotas.
 // Novos papéis (ex.: 'saude') usam o mesmo formato: lista de módulos que podem ver.
+// Perfil "geral" (prefeito, vice e assessoria do gabinete) vê tudo, inclusive os extras (Visão geral, Mapa, Cidadãos).
+// Os demais perfis veem só o(s) módulo(s) UNIxxx da sua área.
 export const ROLES = {
-  geral: { label: 'Gestão geral', modules: ['*'] },
+  geral: { label: 'Gabinete do prefeito', modules: ['*'] }, // prefeito, vice e assessoria
   motorista: { label: 'Motorista', modules: ['frotas'] },
+  saude: { label: 'Saúde', modules: ['saude'] },
+  educacao: { label: 'Educação', modules: ['educacao'] },
 };
+export const isGeral = (role) => role === 'geral';
 
 // Funil de manutenção: 6 etapas. Os 23 status do Frota Chácara (Django) viraram tarefas dentro delas.
 export const STAGES = [

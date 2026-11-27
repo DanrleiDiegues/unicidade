@@ -214,3 +214,7 @@ create policy ca_read on citizen_access for select using (is_admin() or role_in(
 create policy ca_ins on citizen_access for insert with check ((is_admin() or role_in(tenant_id) = 'geral') and user_id = auth.uid());
 grant select, insert, update, delete on citizens, citizen_events to authenticated;
 grant select, insert on citizen_access to authenticated;
+
+-- Extras (mapa/prédios) só para o perfil geral (prefeito, vice e assessoria)
+drop policy if exists p_read on places;
+create policy p_read on places for select using (is_admin() or role_in(tenant_id) = 'geral');
