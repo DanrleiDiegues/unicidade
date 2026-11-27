@@ -57,7 +57,7 @@ export default function Admin({ notify, onOpenTenant, refresh }) {
 
       {tab === 'cities' && (
         <>
-          <div className="section-title"><h2>Cidades</h2><button className="btn primary sm" onClick={() => setCity({ name: '', slug: '', uf: 'MG', modules: ['frotas'] })}><Plus size={14} />Nova cidade</button></div>
+          <div className="section-title"><h2>Cidades</h2><button className="btn primary sm" onClick={() => setCity({ name: '', slug: '', uf: 'MG', modules: ['frotas', 'mapa'] })}><Plus size={14} />Nova cidade</button></div>
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
             {tenants.map((t) => (
               <div key={t.id} className="glass card">

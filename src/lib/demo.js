@@ -69,7 +69,7 @@ function seed() {
   const motorista = { id: uid(), name: 'José Motorista', email: 'motorista@chacara.demo', welcomed: false };
   const helton = { id: uid(), name: 'Helton Diegues', email: 'heltondiegues@gmail.com', password: 'heltonchacara', welcomed: false };
   db.users.push(admin, gestor, motorista, helton);
-  const chacara = { id: uid(), slug: 'chacara', name: 'Chácara', uf: 'MG', logo_url: './logos/chacara.png', ibge: '3115904', lat: -21.6728, lng: -43.2207, plan: 'free', modules: ['frotas'], created_at: now() };
+  const chacara = { id: uid(), slug: 'chacara', name: 'Chácara', uf: 'MG', logo_url: './logos/chacara.png', ibge: '3115904', lat: -21.6728, lng: -43.2207, plan: 'free', modules: ['frotas', 'mapa'], created_at: now() };
   db.tenants.push(chacara);
   db.members.push({ user_id: helton.id, tenant_id: chacara.id, role: 'geral' }, { user_id: gestor.id, tenant_id: chacara.id, role: 'geral' }, { user_id: motorista.id, tenant_id: chacara.id, role: 'motorista' });
   seedFleet(db, chacara.id, motorista.id);
@@ -126,7 +126,7 @@ export const demo = {
   async signUp({ name, email, city }) {
     if (db.users.some((u) => u.email.toLowerCase() === email.toLowerCase())) throw new Error('Este e-mail já tem conta.');
     const u = { id: uid(), name, email, welcomed: true };
-    const t = { id: uid(), slug: uid(), name: `${city || 'Minha cidade'} (teste)`, uf: 'MG', plan: 'trial', modules: ['frotas'], created_at: now() };
+    const t = { id: uid(), slug: uid(), name: `${city || 'Minha cidade'} (teste)`, uf: 'MG', plan: 'trial', modules: ['frotas', 'mapa'], created_at: now() };
     db.users.push(u); db.tenants.push(t); db.members.push({ user_id: u.id, tenant_id: t.id, role: 'geral' });
     seedFleet(db, t.id, u.id); welcome(u, t.name); save();
     current = u.id; try { sessionStorage.setItem(KEY + '-me', u.id); } catch { /* ignore */ }

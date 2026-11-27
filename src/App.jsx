@@ -58,7 +58,7 @@ export default function App() {
         )}
         <nav className="pill-nav glass">
           {m && isGeral(role) && <button className={view === 'hub' ? 'on' : ''} onClick={() => setView('hub')}><LayoutGrid size={15} />Visão geral</button>}
-          {m && isGeral(role) && <button className={view === 'mapa' ? 'on' : ''} onClick={() => setView('mapa')}><MapIcon size={15} />Mapa</button>}
+          {m && isGeral(role) && m.tenant.modules?.includes('mapa') && <button className={view === 'mapa' ? 'on' : ''} onClick={() => setView('mapa')}><MapIcon size={15} />Mapa</button>}
           {m && isGeral(role) && <button className={view === 'cidadaos' ? 'on' : ''} onClick={() => setView('cidadaos')}><Users size={15} />Cidadãos</button>}
           {m && isGeral(role) && <button className={view === 'func' ? 'on' : ''} onClick={() => setView('func')}><BadgeCheck size={15} />Funcionários</button>}
           {m && canSee(role, 'frotas') && m.tenant.modules?.includes('frotas') && <button className={view === 'frotas' ? 'on' : ''} onClick={() => setView('frotas')}><Truck size={15} />UNIfrotas</button>}

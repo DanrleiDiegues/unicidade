@@ -6,7 +6,7 @@ export const MODULES = [
   { key: 'infra', name: 'UNInfra', desc: 'Obras, vias e iluminação pública', icon: 'Construction' },
   { key: 'financas', name: 'UNIfinanças', desc: 'Orçamento, despesas e receitas', icon: 'Landmark' },
   { key: 'social', name: 'UNIsocial', desc: 'Assistência social e programas', icon: 'HandHeart' },
-  { key: 'mapa', name: 'UNImapa', desc: 'Mapa 3D e gestão do território', icon: 'Map' },
+  { key: 'mapa', name: 'UNImapa', desc: 'Mapa da cidade, prédios, clima e IBGE', icon: 'Map', ready: true },
   { key: 'ia', name: 'UNIagente', desc: 'Agente de IA sobre todos os dados', icon: 'Sparkles' },
 ];
 
