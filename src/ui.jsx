@@ -6,16 +6,21 @@ import {
 const ICONS = { Truck, HeartPulse, GraduationCap, Construction, Landmark, HandHeart, Map, Sparkles };
 export const ModIcon = ({ name, size = 22 }) => { const I = ICONS[name] || Sparkles; return <I size={size} strokeWidth={1.7} />; };
 
-// Logo UNIcidade: a cidade como uma rede conectada.
+// Logo UNIcidade (D1): pórtico com cúpula, o paço municipal. Cores seguem o tema (White/Grey).
 export const UniLogo = ({ size = 34 }) => (
-  <svg width={size} height={size} viewBox="0 0 34 34" aria-hidden>
-    <rect width="34" height="34" rx="9" fill="#0e7490" />
-    <g stroke="#fff" strokeWidth="1.6" fill="none"><path d="M9 11 17 8l8 3M9 11v12l8 3 8-3V11M17 8v18" /></g>
-    <g fill="#fff"><circle cx="9" cy="11" r="2" /><circle cx="25" cy="11" r="2" /><circle cx="17" cy="26" r="2" /><circle cx="17" cy="8" r="2" /></g>
+  <svg width={size} height={size} viewBox="0 0 46 46" aria-hidden className="uni-logo">
+    <path d="M13 15a10 10 0 0 1 20 0z" fill="var(--logo-soft)" />
+    <rect x="22" y="2" width="2" height="4" fill="var(--logo-main)" />
+    <rect x="6" y="15" width="34" height="4" rx="1.5" fill="var(--logo-main)" />
+    <rect x="9" y="21" width="4.5" height="15" rx="1.5" fill="var(--logo-main)" />
+    <rect x="17" y="21" width="4.5" height="15" rx="1.5" fill="var(--logo-main)" />
+    <rect x="24.5" y="21" width="4.5" height="15" rx="1.5" fill="var(--logo-main)" />
+    <rect x="32.5" y="21" width="4.5" height="15" rx="1.5" fill="var(--logo-main)" />
+    <rect x="4" y="38" width="38" height="4" rx="2" fill="var(--logo-accent)" />
   </svg>
 );
 export const Brand = () => (
-  <div className="brand"><UniLogo /><span><b>UNI</b>cidade</span></div>
+  <div className="brand"><UniLogo size={36} /><span className="brand-word">UNIcidade</span></div>
 );
 
 // Fundo: mapa viário em traço fino, desenhado uma vez (leve e nítido em qualquer tela).

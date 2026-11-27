@@ -360,3 +360,8 @@ select option, select optgroup { background: #ffffff; color: #0f172a; }
 [data-theme="grey"] select option:checked { background: #2563eb; color: #fff; }
 [data-theme="grey"] input::placeholder, [data-theme="grey"] textarea::placeholder { color: rgba(244,246,248,.6); }
 [data-theme="grey"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+/* Logo D1 (pórtico com cúpula) */
+:root { --logo-main: #1D4ED8; --logo-soft: #93C5FD; --logo-accent: #0EA5A4; }
+[data-theme="grey"] { --logo-main: #DBEAFE; --logo-soft: #93C5FD; --logo-accent: #5EEAD4; }
+.brand .brand-word { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif; font-weight: 600; font-size: 22px; letter-spacing: -.01em; }
