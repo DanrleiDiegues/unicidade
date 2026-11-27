@@ -16,11 +16,11 @@ const ACESSORIOS = ['Bagagito', 'Calota', 'Chave de roda', 'Triângulo', 'Macaco
 
 // type: text | date | time | number | money | textarea | radio | checks | sign | sna | tires
 export const FORMS = [
-  { key: 'smc', code: '01', stage: 0, title: 'Chamado de manutenção · SMC (Solicitação de Manutenção Corretiva)', sections: [
-    { title: 'Identificação', fields: [['numero', 'Nº da SMC'], ['data', 'Data', 'date'], ['setor', 'Setor solicitante'], ['motorista', 'Motorista'], ['hodometro', 'Hodômetro (km)', 'number']] },
+  { key: 'smc', code: '01', stage: 0, title: 'Abertura da OS · SMC (Solicitação de Manutenção Corretiva)', sections: [
+    { title: 'Identificação', fields: [['numero', 'Nº da OS / SMC'], ['data', 'Data', 'date'], ['setor', 'Setor solicitante'], ['motorista', 'Motorista'], ['hodometro', 'Hodômetro (km)', 'number']] },
     { title: 'Descrição do defeito', fields: [['defeito', 'Descrição do defeito', 'textarea'], ['gravidade', 'Classificação da gravidade', 'radio', GRAVIDADE]] },
     { title: 'Assinaturas', fields: [['ass_motorista', 'Motorista', 'sign'], ['ass_chefe', 'Chefe do setor', 'sign']] },
-    { title: 'Uso exclusivo da gestão de frotas', fields: [['recebido', 'Recebido em', 'date'], ['gestor', 'Gestor'], ['encaminhado', 'Encaminhado para', 'radio', [['vistoria', 'Vistoria'], ['os', 'OS direta'], ['devolvido', 'Devolvido']]], ['obs', 'Observações', 'textarea'], ['ass_ucgf', 'Gestor da UCGF', 'sign']] },
+    { title: 'Uso exclusivo da gestão de frotas', fields: [['recebido', 'Recebido em', 'date'], ['gestor', 'Gestor'], ['encaminhado', 'Encaminhado para', 'radio', [['vistoria', 'Vistoria'], ['os', 'Execução direta (sem vistoria)'], ['devolvido', 'Devolvido']]], ['obs', 'Observações', 'textarea'], ['ass_ucgf', 'Gestor da UCGF', 'sign']] },
   ] },
   { key: 'checklist', code: '03', stage: 1, title: 'Checklist de inspeção do veículo', sections: [
     { title: 'Dados', fields: [['condicao', 'Veículo', 'radio', [['novo', 'Novo'], ['usado', 'Usado']]], ['km', 'Km', 'number'], ['data', 'Data', 'date'], ['hora', 'Hora', 'time'], ['crlv', 'Documento original (CRLV) no veículo?', 'radio', [['sim', 'Sim'], ['nao', 'Não']]], ['exercicio', 'Exercício do CRLV'], ['combustivel', 'Nível de combustível', 'radio', [['E', 'Reserva'], ['1/4', '1/4'], ['1/2', '1/2'], ['3/4', '3/4'], ['F', 'Cheio']]], ['sujo', 'Devolvido excessivamente sujo?', 'radio', [['sim', 'Sim'], ['nao', 'Não']]]] },

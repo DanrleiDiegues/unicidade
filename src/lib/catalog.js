@@ -20,7 +20,7 @@ export const ROLES = {
 // Funil de manutenção: 6 etapas. Os 23 status do Frota Chácara (Django) viraram tarefas dentro delas.
 export const STAGES = [
   { name: 'Solicitação', tasks: ['Formulário 01 (SMC) preenchido', 'Autorização do secretário da pasta'] },
-  { name: 'Vistoria e OS', tasks: ['Formulário 03 (checklist de inspeção) preenchido', 'Ordem de Serviço emitida (nº da OS)', 'Diagnóstico da oficina (serviços e peças)'] },
+  { name: 'Vistoria e OS', tasks: ['Formulário 03 (checklist de inspeção) preenchido', 'OS autorizada pela gestão da frota', 'Diagnóstico da oficina (serviços e peças)'] },
   { name: 'Orçamento', tasks: ['Formulário 02 (entrada, orçamento e diagnóstico) preenchido', 'Análise da comissão: necessidade, quantidades, valores e mão de obra', 'Aprovado pela comissão'] },
   { name: 'Execução', tasks: ['AF de serviço emitida', 'AF de peças emitida', 'Serviço executado (início, fim e o que foi feito)'] },
   { name: 'Recebimento', tasks: ['Formulário 02 (termo de recebimento e conferência) preenchido', 'Peças substituídas entregues', 'Relatório fotográfico (antes e depois)'] },

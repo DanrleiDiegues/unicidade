@@ -103,7 +103,7 @@ export default function Frotas({ tenant, user, notify }) {
       <div className="hero">
         <div><div className="eyebrow">{tenant.name} · UNIfrotas</div><h1>Gestão da frota <span>· {vehicles.length} veículos</span></h1></div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button className="btn primary" onClick={() => setSmc(true)}><Plus size={16} />Abrir chamado de manutenção</button>
+        <button className="btn primary" onClick={() => setSmc(true)}><Plus size={16} />Abrir OS</button>
         <div className="tabs glass" style={{ padding: 5, margin: 0 }}>
           {[['manut', 'Manutenção', Wrench], ['mov', 'Movimentações', ArrowLeftRight], ['veic', 'Veículos', Car], ['fuel', 'Abastecimento', Fuel]].map(([k, l, I]) => (
             <button key={k} className={`btn sm ${tab === k ? 'primary' : 'ghost'}`} onClick={() => setTab(k)}><I size={14} />{l}</button>
@@ -111,7 +111,7 @@ export default function Frotas({ tenant, user, notify }) {
         </div>
         </div>
       </div>
-      {smc && <NewSmc tenant={tenant} user={user} vehicles={vehicles} count={orders.length} onClose={() => setSmc(false)} onDone={() => { setSmc(false); notify('Chamado aberto (Formulário 01 · SMC). Ele está na coluna 1. Solicitação.'); load(); }} />}
+      {smc && <NewSmc tenant={tenant} user={user} vehicles={vehicles} count={orders.length} onClose={() => setSmc(false)} onDone={() => { setSmc(false); notify('OS aberta (Formulário 01 · SMC). Ela está na coluna 1. Solicitação.'); load(); }} />}
 
       {tab === 'manut' && (
         <div className="kanban">
@@ -125,7 +125,7 @@ export default function Frotas({ tenant, user, notify }) {
                   return (
                     <div key={o.id} className="ticket" onClick={() => setSel(o)}>
                       <div className="t-top"><span>{vOf(o.vehicle_id)?.plate}</span>{o.closed ? <span className="badge on">concluída</span> : <span className={`prio-${o.priority}`}>● {o.priority}</span>}</div>
-                      <div className="t-title">{o.title}</div>
+                      <div className="t-title">{o.forms?.smc?.data?.numero && <span className="muted" style={{ fontWeight: 500 }}>OS {o.forms.smc.data.numero} · </span>}{o.title}</div>
                       <div className="bar"><i style={{ width: `${tk.length ? (done / tk.length) * 100 : 100}%` }} /></div>
                       <div className="t-top"><span>{done}/{tk.length} tarefas</span><span>{fmtDate(o.created_at)}</span></div>
                     </div>
