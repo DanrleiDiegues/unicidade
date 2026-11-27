@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { LayoutGrid, Truck, Shield, Sun, CloudFog, LogOut, Map as MapIcon } from 'lucide-react';
+import { LayoutGrid, Truck, Shield, Sun, CloudFog, LogOut, Map as MapIcon, Users } from 'lucide-react';
 import { api } from './lib/api';
 import { canSee } from './lib/catalog';
 import { Backdrop, Brand, initials } from './ui';
 import Auth, { SetPassword } from './pages/Auth';
 import Hub from './pages/Hub';
 import Mapa from './pages/Mapa';
+import Cidadaos from './pages/Cidadaos';
 import Frotas from './pages/Frotas';
 import Motorista from './pages/Motorista';
 import Admin from './pages/Admin';
@@ -57,6 +58,7 @@ export default function App() {
         <nav className="pill-nav glass">
           {m && role !== 'motorista' && <button className={view === 'hub' ? 'on' : ''} onClick={() => setView('hub')}><LayoutGrid size={15} />Visão geral</button>}
           {m && role !== 'motorista' && <button className={view === 'mapa' ? 'on' : ''} onClick={() => setView('mapa')}><MapIcon size={15} />Mapa</button>}
+          {m && role === 'geral' && <button className={view === 'cidadaos' ? 'on' : ''} onClick={() => setView('cidadaos')}><Users size={15} />Cidadãos</button>}
           {m && canSee(role, 'frotas') && m.tenant.modules?.includes('frotas') && <button className={view === 'frotas' ? 'on' : ''} onClick={() => setView('frotas')}><Truck size={15} />UNIfrotas</button>}
           {isAdmin && <button className={view === 'admin' ? 'on' : ''} onClick={async () => { setAllTenants(await api.tenants()); setView('admin'); }}><Shield size={15} />Admin</button>}
         </nav>
@@ -79,6 +81,7 @@ export default function App() {
       <main className="page">
         {view === 'admin' && isAdmin && <Admin notify={notify} onOpenTenant={openTenant} refresh={async () => setAllTenants(await api.tenants())} />}
         {view === 'hub' && m && <Hub tenant={m.tenant} user={session.user} onOpen={(k) => k === 'frotas' || k === 'mapa' ? setView(k) : notify('Módulo em construção — em breve.')} />}
+        {view === 'cidadaos' && m && role === 'geral' && <Cidadaos tenant={m.tenant} user={session.user} notify={notify} />}
         {view === 'mapa' && m && <Mapa tenant={m.tenant} role={role} notify={notify} onOpenFrotas={() => setView('frotas')} />}
         {view === 'frotas' && m && (role === 'motorista'
           ? <Motorista tenant={m.tenant} user={session.user} notify={notify} />

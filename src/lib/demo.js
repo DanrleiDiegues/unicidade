@@ -2,7 +2,7 @@
 // Tem as mesmas funções do adaptador Supabase (supa.js), então as telas não mudam.
 import { STAGES } from './catalog';
 
-const KEY = 'unicidade-demo-v6';
+const KEY = 'unicidade-demo-v7';
 const uid = () => Math.random().toString(36).slice(2, 10);
 const now = () => new Date().toISOString();
 const daysAgo = (d) => new Date(Date.now() - d * 864e5).toISOString();
@@ -49,8 +49,21 @@ function seedFleet(db, tenant_id, driverId) {
   db.fuel.forEach((f) => (f.value = f.value || Math.round(f.liters * 6.1)));
 }
 
+function seedCitizens(db, tenant_id) {
+  const P = [
+    ['Maria Aparecida Souza (exemplo)', '1951-03-14', 'Centro', ['Idoso', 'Programa social'], [['saude', 'Consulta de rotina na UBS', 6], ['transporte', 'Transporte para exame em Juiz de Fora', 20], ['social', 'Visita domiciliar do CRAS', 45]]],
+    ['João Pedro Lima (exemplo)', '2014-08-02', 'Recanto das Cachoeiras', ['Criança', 'Estudante'], [['educacao', 'Matrícula no 6º ano', 290], ['transporte', 'Inscrito no transporte escolar', 280], ['saude', 'Vacinação em dia', 60]]],
+    ['Ana Clara Ribeiro (exemplo)', '1993-11-21', 'Zona rural', ['Gestante', 'Zona rural'], [['saude', 'Pré-natal · 3ª consulta', 3], ['ouvidoria', 'Pedido de melhoria na estrada vicinal', 15], ['tributos', 'Emissão de guia de ITR', 120]]],
+  ];
+  P.forEach(([nome, nascimento, bairro, tags, ev], i) => {
+    const c = { id: uid(), tenant_id, nome, nascimento, bairro, tags, cpf: `000${i + 1}23456789`.slice(0, 11), telefone: '(32) 9 0000-000' + i, email: '', endereco: '', notas: 'Cadastro fictício para demonstração.', created_at: now() };
+    db.citizens.push(c);
+    ev.forEach(([area, titulo, d]) => db.cevents.push({ id: uid(), tenant_id, citizen_id: c.id, area, titulo, data: daysAgo(d).slice(0, 10), detalhe: '', por: 'Equipe (exemplo)' }));
+  });
+}
+
 function seed() {
-  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [], suppliers: [], places: [] };
+  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [], suppliers: [], places: [], citizens: [], cevents: [], caccess: [] };
   const admin = { id: uid(), name: 'Danrlei Diegues', email: 'danrlei.diegueso@gmail.com', platform_admin: true, welcomed: true };
   const gestor = { id: uid(), name: 'Danrlei Oliveira', email: 'danrlei.oliveira@estudante.ufjf.br', welcomed: false };
   const motorista = { id: uid(), name: 'José Motorista', email: 'motorista@chacara.demo', welcomed: false };
@@ -64,6 +77,7 @@ function seed() {
     ['Escola Municipal (exemplo)', 'educacao', 'Educação', -21.6748, -43.2250], ['Garagem da frota (exemplo)', 'garagem', '', -21.6766, -43.2172],
     ['Pátio de obras (exemplo)', 'obras', 'Obras', -21.6790, -43.2195]]
     .forEach(([name, kind, secretaria, lat, lng]) => db.places.push({ id: uid(), tenant_id: chacara.id, name, kind, secretaria, lat, lng }));
+  seedCitizens(db, chacara.id);
   [['Auto Elétrica Chácara (exemplo)', 'Auto elétrica'], ['Mecânica Diesel São João (exemplo)', 'Oficina mecânica'], ['Concessionária VW Juiz de Fora (exemplo)', 'Concessionária']]
     .forEach(([name, kind]) => db.suppliers.push({ id: uid(), tenant_id: chacara.id, name, kind, doc: '', phone: '' }));
   return db;
@@ -167,6 +181,12 @@ export const demo = {
     const v = db.vehicles.find((x) => x.id === m.vehicle_id); if (v) { v.status = 'disponivel'; v.km = Math.max(v.km, Number(km_in)); }
     save();
   },
+  async citizens(tenant_id) { return (db.citizens || []).filter((x) => x.tenant_id === tenant_id).sort((a, b) => a.nome.localeCompare(b.nome)); },
+  async addCitizen(x) { const c = { id: uid(), created_at: now(), ...x }; (db.citizens ||= []).push(c); save(); return c; },
+  async citizenEvents(citizen_id) { return (db.cevents || []).filter((x) => x.citizen_id === citizen_id).sort((a, b) => b.data.localeCompare(a.data)); },
+  async addCitizenEvent(x) { const e = { id: uid(), ...x }; (db.cevents ||= []).push(e); save(); return e; },
+  async logCitizenAccess(x) { (db.caccess ||= []).push({ id: uid(), at: now(), ...x }); save(); },
+  async citizenAccess(citizen_id) { return (db.caccess || []).filter((x) => x.citizen_id === citizen_id).sort((a, b) => b.at.localeCompare(a.at)); },
   async places(tenant_id) { return (db.places || []).filter((x) => x.tenant_id === tenant_id); },
   async addPlace(x) { const p = { id: uid(), ...x }; (db.places ||= []).push(p); save(); return p; },
   async updatePlace(id, patch) { Object.assign(db.places.find((x) => x.id === id), patch); save(); },

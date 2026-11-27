@@ -89,6 +89,12 @@ export const supa = {
     const m = ok(await sb.from('moves').update({ km_in: Number(km_in), in_at: new Date().toISOString() }).eq('id', id).select().single());
     await sb.from('vehicles').update({ status: 'disponivel', km: Number(km_in) }).eq('id', m.vehicle_id);
   },
+  async citizens(tenant_id) { return ok(await sb.from('citizens').select('*').eq('tenant_id', tenant_id).order('nome')); },
+  async addCitizen(x) { return ok(await sb.from('citizens').insert(x).select().single()); },
+  async citizenEvents(citizen_id) { return ok(await sb.from('citizen_events').select('*').eq('citizen_id', citizen_id).order('data', { ascending: false })); },
+  async addCitizenEvent(x) { return ok(await sb.from('citizen_events').insert(x).select().single()); },
+  async logCitizenAccess(x) { await sb.from('citizen_access').insert(x); },
+  async citizenAccess(citizen_id) { return ok(await sb.from('citizen_access').select('*').eq('citizen_id', citizen_id).order('at', { ascending: false }).limit(20)); },
   async places(tenant_id) { return ok(await sb.from('places').select('*').eq('tenant_id', tenant_id)); },
   async addPlace(x) { return ok(await sb.from('places').insert(x).select().single()); },
   async updatePlace(id, patch) { ok(await sb.from('places').update(patch).eq('id', id)); },

@@ -192,3 +192,25 @@ alter table places enable row level security;
 create policy p_read on places for select using (is_admin() or role_in(tenant_id) is not null);
 create policy p_write on places for all using (is_admin() or role_in(tenant_id) = 'geral') with check (is_admin() or role_in(tenant_id) = 'geral');
 grant select, insert, update, delete on places to authenticated;
+
+-- Cidadão 360º (dados pessoais: só perfil geral; acessos registrados)
+create table if not exists citizens (
+  id uuid primary key default gen_random_uuid(), tenant_id uuid not null references tenants on delete cascade,
+  nome text not null, cpf text, nascimento date, telefone text, email text, endereco text, bairro text,
+  tags text[] default '{}', notas text, created_at timestamptz default now());
+create table if not exists citizen_events (
+  id uuid primary key default gen_random_uuid(), tenant_id uuid not null references tenants on delete cascade,
+  citizen_id uuid not null references citizens on delete cascade, area text not null, titulo text not null,
+  data date default current_date, detalhe text, por text, created_at timestamptz default now());
+create table if not exists citizen_access (
+  id uuid primary key default gen_random_uuid(), tenant_id uuid not null references tenants on delete cascade,
+  citizen_id uuid not null references citizens on delete cascade, user_id uuid, user_name text, at timestamptz default now());
+alter table citizens enable row level security;
+alter table citizen_events enable row level security;
+alter table citizen_access enable row level security;
+create policy c_all on citizens for all using (is_admin() or role_in(tenant_id) = 'geral') with check (is_admin() or role_in(tenant_id) = 'geral');
+create policy ce_all on citizen_events for all using (is_admin() or role_in(tenant_id) = 'geral') with check (is_admin() or role_in(tenant_id) = 'geral');
+create policy ca_read on citizen_access for select using (is_admin() or role_in(tenant_id) = 'geral');
+create policy ca_ins on citizen_access for insert with check ((is_admin() or role_in(tenant_id) = 'geral') and user_id = auth.uid());
+grant select, insert, update, delete on citizens, citizen_events to authenticated;
+grant select, insert on citizen_access to authenticated;
