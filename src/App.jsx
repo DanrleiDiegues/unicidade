@@ -3,7 +3,7 @@ import { LayoutGrid, Truck, Shield, Sun, CloudFog, LogOut, Building2 } from 'luc
 import { api } from './lib/api';
 import { canSee } from './lib/catalog';
 import { Backdrop, initials } from './ui';
-import Auth from './pages/Auth';
+import Auth, { SetPassword } from './pages/Auth';
 import Hub from './pages/Hub';
 import Frotas from './pages/Frotas';
 import Motorista from './pages/Motorista';
@@ -33,6 +33,7 @@ export default function App() {
 
   if (session === undefined) return <Backdrop />;
   if (!session) return <><Backdrop /><Auth onAuthed={enter} /></>;
+  if (api.needsPassword && !session.pwDone) return <><Backdrop /><SetPassword name={session.user.name} onDone={() => setSession({ ...session, pwDone: true })} /></>;
 
   const isAdmin = session.user.platform_admin;
   // O admin da plataforma enxerga qualquer cidade com o papel "geral".

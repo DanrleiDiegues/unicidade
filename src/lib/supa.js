@@ -4,6 +4,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { STAGES } from './catalog';
 
+// Link de convite ou de recuperação: a pessoa entra logada e precisa definir a senha.
+const needsPassword = /type=(invite|recovery)/.test(location.hash);
 const sb = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY);
 const ok = ({ data, error }) => { if (error) throw new Error(error.message); return data; };
 const tasks0 = () => STAGES.flatMap((s, i) => s.tasks.map((label) => ({ id: crypto.randomUUID(), stage: i, label, done: false })));
@@ -21,6 +23,8 @@ async function loadSession() {
 
 export const supa = {
   mode: 'prod',
+  needsPassword,
+  async setPassword(password) { ok(await sb.auth.updateUser({ password })); history.replaceState(null, '', location.pathname); },
   session: loadSession,
   async signIn(email, password) {
     ok(await sb.auth.signInWithPassword({ email, password }));

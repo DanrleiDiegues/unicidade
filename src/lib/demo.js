@@ -87,6 +87,8 @@ function sessionOf(id) {
 
 export const demo = {
   mode: 'demo',
+  needsPassword: false,
+  async setPassword() {},
   async session() { return current ? sessionOf(current) : null; },
   async signIn(email, password) {
     const u = db.users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase());

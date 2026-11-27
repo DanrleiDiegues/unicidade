@@ -56,3 +56,24 @@ export default function Auth({ onAuthed }) {
     </div>
   );
 }
+
+export function SetPassword({ name, onDone }) {
+  const [pw, setPw] = useState('');
+  const [err, setErr] = useState('');
+  async function submit(e) {
+    e.preventDefault(); setErr('');
+    try { await api.setPassword(pw); onDone(); } catch (x) { setErr(x.message); }
+  }
+  return (
+    <div className="auth">
+      <form className="glass auth-form" style={{ width: 'min(440px, 100%)' }} onSubmit={submit}>
+        <div className="brand"><div className="logo"><Building2 size={18} /></div><span><b>UNI</b>cidade</span></div>
+        <h2 style={{ margin: 0 }}>Bem-vindo(a), {name?.split(' ')[0]}!</h2>
+        <p className="muted" style={{ margin: 0 }}>Crie a sua senha para acessar o UNIcidade.</p>
+        <label className="f">Nova senha<input className="input" type="password" required minLength={6} value={pw} onChange={(e) => setPw(e.target.value)} /></label>
+        {err && <div style={{ color: 'var(--bad)', fontSize: 14 }}>{err}</div>}
+        <button className="btn primary">Salvar senha e entrar<ArrowRight size={16} /></button>
+      </form>
+    </div>
+  );
+}
