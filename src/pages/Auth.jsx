@@ -36,7 +36,7 @@ export default function Auth({ onAuthed }) {
           </div>
           <div className="chips"><span className="badge">UNIfrotas</span><span className="badge">UNIsaúde</span><span className="badge">UNIeducação</span><span className="badge">UNInfra</span></div>
         </div>
-        <form className="auth-form" onSubmit={submit}>
+        <form className="auth-form" method="post" action="#" onSubmit={submit}>
           <div className="tabs">
             <button type="button" className={`btn sm ${mode === 'login' ? 'primary' : ''}`} onClick={() => setMode('login')}>Entrar</button>
             <button type="button" className={`btn sm ${mode === 'signup' ? 'primary' : ''}`} onClick={() => setMode('signup')}>Criar conta grátis</button>
@@ -45,8 +45,8 @@ export default function Auth({ onAuthed }) {
           {mode === 'forgot' && <p className="muted" style={{ margin: 0 }}>Informe seu e-mail e enviaremos um link para criar uma nova senha.</p>}
           {mode === 'signup' && <label className="f">Nome<input className="input" required value={f.name} onChange={set('name')} /></label>}
           {mode === 'signup' && <label className="f">Sua cidade<input className="input" placeholder="Ex.: Bicas" value={f.city} onChange={set('city')} /></label>}
-          <label className="f">E-mail<input className="input" type="email" required value={f.email} onChange={set('email')} /></label>
-          {mode !== 'forgot' && <label className="f">Senha<input className="input" type="password" required minLength={6} value={f.password} onChange={set('password')} /></label>}
+          <label className="f">E-mail<input className="input" type="email" name="email" autoComplete="username" required value={f.email} onChange={set('email')} /></label>
+          {mode !== 'forgot' && <label className="f">Senha<input className="input" type="password" name="password" autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} required minLength={6} value={f.password} onChange={set('password')} /></label>}
           {err && <div style={{ color: 'var(--bad)', fontSize: 14 }}>{err}</div>}
           {info && <div style={{ color: 'var(--ok)', fontSize: 14 }}>{info}</div>}
           <button className="btn primary" disabled={busy}>{mode === 'login' ? 'Entrar' : mode === 'forgot' ? 'Enviar link' : 'Criar minha conta'}<ArrowRight size={16} /></button>
@@ -81,7 +81,7 @@ export function SetPassword({ name, onDone }) {
         <Brand />
         <h2 style={{ margin: 0 }}>Bem-vindo(a), {name?.split(' ')[0]}!</h2>
         <p className="muted" style={{ margin: 0 }}>Crie a sua senha para acessar o UNIcidade.</p>
-        <label className="f">Nova senha<input className="input" type="password" required minLength={6} value={pw} onChange={(e) => setPw(e.target.value)} /></label>
+        <label className="f">Nova senha<input className="input" type="password" name="new-password" autoComplete="new-password" required minLength={6} value={pw} onChange={(e) => setPw(e.target.value)} /></label>
         {err && <div style={{ color: 'var(--bad)', fontSize: 14 }}>{err}</div>}
         <button className="btn primary">Salvar senha e entrar<ArrowRight size={16} /></button>
       </form>
