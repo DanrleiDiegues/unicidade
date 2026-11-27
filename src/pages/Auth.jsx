@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
-import { Brand } from '../ui';
+import { ArrowRight, Building2, Map as MapIcon, ShieldCheck } from 'lucide-react';
+import { Brand, ModIcon } from '../ui';
+import { MODULES } from '../lib/catalog';
 import { api } from '../lib/api';
 import { DEMO_PASSWORD } from '../lib/demo';
 
@@ -34,12 +35,26 @@ export default function Auth({ onAuthed }) {
       <div className="auth-box glass">
         <div className="auth-side">
           <Brand />
-          <div>
-            <div className="eyebrow">Inteligência para a gestão municipal</div>
-            <h1>Uma plataforma. Todas as secretarias.</h1>
-            <p className="muted">Frotas, saúde, educação, infraestrutura e finanças num só lugar, com um único login para cada servidor.</p>
+          <div className="as-main">
+            <h1 className="as-title">A prefeitura inteira, em um só lugar.</h1>
+            <ul className="as-list">
+              <li><Building2 size={16} />Todas as secretarias integradas</li>
+              <li><MapIcon size={16} />Mapa, clima e dados do IBGE</li>
+              <li><ShieldCheck size={16} />Acesso por perfil e LGPD</li>
+            </ul>
           </div>
-          <div className="chips"><span className="badge">UNIfrotas</span><span className="badge">UNIsaúde</span><span className="badge">UNIeducação</span><span className="badge">UNInfra</span></div>
+          <div>
+            <div className="as-label">Um módulo para cada secretaria</div>
+            <div className="as-mods">
+              {[...MODULES].sort((a, b) => (b.ready ? 1 : 0) - (a.ready ? 1 : 0)).slice(0, 6).map((m) => (
+                <div key={m.key} className={`as-mod ${m.ready ? 'on' : ''}`}>
+                  <ModIcon name={m.icon} />
+                  <b>{m.name}</b>
+                  <small>{m.ready ? 'Ativo' : 'Em breve'}</small>
+                </div>))}
+            </div>
+            <div className="as-foot">Um único login para cada servidor.</div>
+          </div>
         </div>
         <form className="auth-form" method="post" action="#" onSubmit={submit}>
           <div className="tabs">
