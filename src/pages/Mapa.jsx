@@ -82,7 +82,7 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
 
   // mapa
   useEffect(() => {
-    const m = baseMap(el.current, tenant, 16); map.current = m;
+    const m = baseMap(el.current, tenant, 17); map.current = m;
     ['limite', 'locais'].forEach((k) => (groups.current[k] = L.layerGroup().addTo(m)));
     m.on('popupopen', (e) => e.popup.getElement()?.querySelectorAll('[data-os]').forEach((b) => (b.onclick = () => onOpenFrotas?.())));
     setTimeout(() => m.invalidateSize(), 200);
@@ -178,7 +178,7 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
             <button className={bg === 'sat' ? 'on' : ''} onClick={() => setBg('sat')}><Satellite size={14} />Satélite</button>
           </div>
           <div className="glass seg">
-            <button onClick={() => map.current.setView(center(tenant), 16)}><Crosshair size={14} />Centro</button>
+            <button onClick={() => map.current.setView(center(tenant), 17)}><Crosshair size={14} />Centro</button>
             <button onClick={() => { const b = groups.current.limite.getLayers()[1]; if (b) map.current.fitBounds(b.getBounds(), { padding: [20, 20] }); }}><Layers size={14} />Município todo</button>
           </div>
           {mode && <div className="glass hint-bar"><Crosshair size={14} />Clique no mapa onde fica o novo prédio<button className="btn sm ghost" onClick={() => setMode(null)}>Cancelar</button></div>}
