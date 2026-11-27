@@ -176,10 +176,10 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
       <aside className="map-side">
         <div className="glass card">
           <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Layers size={16} />Camadas</h3>
-          {[['limite', 'Limite do município (IBGE)'], ['locais', `Prédios públicos · ${places.length}`], ['frota', 'Frota por secretaria'], ['ocorr', `Alertas de ocorrências · ${open.length}`]].map(([k, l]) => (
-            <label key={k} className="chk"><input type="checkbox" checked={layers[k]} onChange={() => setLayers({ ...layers, [k]: !layers[k] })} />{l}</label>))}
+          <div className="chks">{[['limite', 'Limite (IBGE)'], ['locais', `Prédios · ${places.length}`], ['frota', 'Frota'], ['ocorr', `Alertas · ${open.length}`]].map(([k, l]) => (
+            <label key={k} className="chk"><input type="checkbox" checked={layers[k]} onChange={() => setLayers({ ...layers, [k]: !layers[k] })} />{l}</label>))}</div>
           <div className="legend">{Object.entries(PLACE_KINDS).map(([k, [l, e]]) => <span key={k}>{e} {l}</span>)}
-            <span><i className="dot" style={{ background: PRIO.alta }} />Prédio pisca: ocorrência alta</span><span><i className="dot" style={{ background: PRIO.media }} />média</span><span><i className="dot" style={{ background: PRIO.baixa }} />baixa</span></div>
+            <span><i className="dot" style={{ background: PRIO.alta }} />Pisca: alerta alto</span><span><i className="dot" style={{ background: PRIO.media }} />média</span><span><i className="dot" style={{ background: PRIO.baixa }} />baixa</span></div>
           {canEdit && <div style={{ display: 'grid', gap: 8, marginTop: 10 }}>
             <button className="btn sm primary" onClick={() => setMode({ type: 'place' })}><Plus size={14} />Adicionar prédio público</button>
           </div>}
@@ -204,17 +204,16 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
           <small className="muted src">Fonte: Open-Meteo (dados abertos)</small>
         </div>
 
-        <div className="glass card">
+        <div className="glass card grow-card">
           <h3>{tenant.name} em números</h3>
           {!ibge && <span className="muted">Código IBGE da cidade não configurado.</span>}
           {ibge && ind === null && <span className="muted">Buscando dados do IBGE…</span>}
           {ind === false && <span className="muted">IBGE indisponível no momento.</span>}
           {ind && <div className="ibge">
             {ind.map((x) => (
-              <div key={x.id}><small>{x.label}</small>
-                <b>{x.unit === 'R$' ? `R$ ${fmtNum(x.valor, 0)}` : x.unit === '%' ? `${fmtNum(x.valor, 1)}%` : fmtNum(x.valor, x.unit === 'km²' || x.unit === 'sal. mín.' ? 1 : 0)}{x.unit !== 'R$' && x.unit !== '%' ? <em> {x.unit}</em> : ''}</b>
-                <small className="muted">{x.ano}</small></div>))}
-            {pop?.valor && area?.valor && <div><small>Densidade</small><b>{fmtNum(pop.valor / area.valor, 1)}<em> hab/km²</em></b><small className="muted">calculada</small></div>}
+              <div key={x.id} title={`${x.label} (${x.ano})`}><small>{x.label}</small>
+                <b>{x.unit === 'R$' ? `R$ ${fmtNum(x.valor, 0)}` : x.unit === '%' ? `${fmtNum(x.valor, 1)}%` : fmtNum(x.valor, x.unit === 'km²' || x.unit === 'sal. mín.' ? 1 : 0)}{x.unit !== 'R$' && x.unit !== '%' ? <em> {x.unit}</em> : ''}<em className="yr"> · {x.ano}</em></b></div>))}
+            {pop?.valor && area?.valor && <div title="Densidade (calculada)"><small>Densidade</small><b>{fmtNum(pop.valor / area.valor, 1)}<em> hab/km²</em></b></div>}
           </div>}
           <a className="src" href={`https://cidades.ibge.gov.br/brasil/${(tenant.uf || '').toLowerCase()}/${norm(tenant.name).replace(/\s+/g, '-')}/panorama`} target="_blank" rel="noreferrer">Fonte: IBGE Cidades <ExternalLink size={11} /></a>
         </div>
