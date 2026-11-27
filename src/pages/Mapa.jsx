@@ -62,7 +62,7 @@ export function PointPicker({ tenant, value, onChange }) {
 }
 
 const pulseIcon = (p) => L.divIcon({ className: '', html: `<div class="pulse" style="--c:${PRIO[p] || PRIO.media}"><i></i></div>`, iconSize: [22, 22], iconAnchor: [11, 11] });
-const placeIcon = (k, n) => { const [, e, c] = PLACE_KINDS[k] || PLACE_KINDS.outro; return L.divIcon({ className: '', html: `<div class="pin" style="--c:${c}"><span>${e}</span>${n ? `<b>${n}</b>` : ''}</div>`, iconSize: [38, 46], iconAnchor: [19, 44], popupAnchor: [0, -40] }); };
+const placeIcon = (k, n, alert) => { const [, e, c] = PLACE_KINDS[k] || PLACE_KINDS.outro; return L.divIcon({ className: '', html: `<div class="pin-wrap">${alert ? `<i class="ring" style="--a:${alert}"></i><i class="ring r2" style="--a:${alert}"></i>` : ''}<div class="pin" style="--c:${c}"><span>${e}</span>${n ? `<b>${n}</b>` : ''}</div></div>`, iconSize: [38, 46], iconAnchor: [19, 44], popupAnchor: [0, -40] }); };
 
 export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
   const el = useRef(null); const map = useRef(null); const base = useRef(null); const groups = useRef({});
@@ -83,7 +83,7 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
   // mapa
   useEffect(() => {
     const m = baseMap(el.current, tenant, 16); map.current = m;
-    ['limite', 'locais', 'ocorr'].forEach((k) => (groups.current[k] = L.layerGroup().addTo(m)));
+    ['limite', 'locais'].forEach((k) => (groups.current[k] = L.layerGroup().addTo(m)));
     m.on('popupopen', (e) => e.popup.getElement()?.querySelectorAll('[data-os]').forEach((b) => (b.onclick = () => onOpenFrotas?.())));
     setTimeout(() => m.invalidateSize(), 200);
     return () => m.remove();
@@ -97,8 +97,7 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
     const m = map.current; if (!m) return;
     m.getContainer().style.cursor = mode ? 'crosshair' : '';
     const h = (e) => { if (!mode) return; const pt = { lat: +e.latlng.lat.toFixed(6), lng: +e.latlng.lng.toFixed(6) };
-      if (mode.type === 'place') setDraft({ ...pt, name: '', kind: 'saude', secretaria: 'Saúde' });
-      else api.updateOrder(mode.id, pt, 'Local da ocorrência marcado no mapa').then(() => { notify?.('Local da OS marcado no mapa.'); load(); });
+      setDraft({ ...pt, name: '', kind: 'saude', secretaria: 'Saúde' });
       setMode(null); };
     m.on('click', h); return () => m.off('click', h);
   }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -127,28 +126,17 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
       const cnt = (s) => vs.filter((v) => v.status === s).length;
       const html = `<div class="pop"><small>${k[1]} ${esc(k[0])}</small><b>${esc(p.name)}</b>${p.secretaria ? `<span>Secretaria: ${esc(p.secretaria)}</span>` : ''}
         ${vs.length ? `<div class="pop-k"><div><b>${vs.length}</b>${p.kind === 'garagem' ? 'na oficina' : 'veículos'}</div><div><b>${cnt('disponivel')}</b>disponíveis</div><div><b>${cnt('em_uso')}</b>em uso</div><div><b>${cnt('manutencao')}</b>manutenção</div></div>` : ''}
-        ${os.length ? `<div class="pop-l">${os.slice(0, 4).map((o) => `• ${esc(o.title)}`).join('<br>')}</div><button class="btn sm primary" data-os="1">Ver ${os.length} OS no UNIfrotas</button>` : ''}
+        ${os.length && p.kind !== 'garagem' ? `<div class="pop-l"><small>⚠️ Ocorrências abertas</small><br>${os.slice(0, 4).map((o) => `• ${esc(o.title)}`).join('<br>')}</div><button class="btn sm primary" data-os="1">Ver ${os.length} ocorrência${os.length > 1 ? 's' : ''} no UNIfrotas</button>` : ''}
         ${canEdit ? '<em>Arraste o marcador para ajustar a posição.</em>' : ''}</div>`;
-      const mk = L.marker([p.lat, p.lng], { icon: placeIcon(p.kind, layers.frota ? vs.length : 0), draggable: canEdit, title: p.name }).bindPopup(html, { maxWidth: 280 });
+      // Alerta no prédio: ocorrências abertas do departamento (hoje: OS da frota). Cor = maior prioridade.
+      const top = ['alta', 'media', 'baixa'].find((x) => os.some((o) => o.priority === x));
+      const alert = layers.ocorr && p.kind !== 'garagem' && top ? PRIO[top] : null;
+      const mk = L.marker([p.lat, p.lng], { icon: placeIcon(p.kind, layers.frota ? vs.length : 0, alert), draggable: canEdit, title: p.name, zIndexOffset: alert ? 400 : 0 }).bindPopup(html, { maxWidth: 280 });
       mk.on('dragend', (e) => { const { lat, lng } = e.target.getLatLng(); api.updatePlace(p.id, { lat: +lat.toFixed(6), lng: +lng.toFixed(6) }).then(load); });
       mk.addTo(g);
     });
-  }, [places, vehicles, orders, layers.locais, layers.frota]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [places, vehicles, orders, layers.locais, layers.frota, layers.ocorr]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ocorrências (OS abertas com local)
-  useEffect(() => {
-    const g = groups.current.ocorr; if (!g) return; g.clearLayers();
-    if (!layers.ocorr) return;
-    open.filter((o) => o.lat).forEach((o) => {
-      const v = vehicles.find((x) => x.id === o.vehicle_id);
-      const num = o.forms?.smc?.data?.numero;
-      L.marker([o.lat, o.lng], { icon: pulseIcon(o.priority), zIndexOffset: 500 }).bindPopup(
-        `<div class="pop"><small>Ocorrência${num ? ` · OS ${esc(num)}` : ''}</small><b>${esc(o.title)}</b><span>${esc(v?.plate)} · ${esc(v?.model)} · ${esc(v?.secretaria)}</span>
-        <span>Etapa: <b>${esc(STAGES[o.stage]?.name)}</b> · prioridade <b style="color:${PRIO[o.priority]}">${esc(o.priority)}</b></span><button class="btn sm primary" data-os="1">Abrir no UNIfrotas</button></div>`, { maxWidth: 280 }).addTo(g);
-    });
-  }, [orders, vehicles, layers.ocorr]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const semLocal = open.filter((o) => !o.lat);
   const rain = useMemo(() => {
     if (!wx?.daily) return null;
     const i = wx.daily.time.findIndex((_, k) => wx.daily.precipitation_probability_max[k] >= 70 || wx.daily.precipitation_sum[k] >= 20);
@@ -175,7 +163,7 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
             <button onClick={() => map.current.setView(center(tenant), 16)}><Crosshair size={14} />Centro</button>
             <button onClick={() => { const b = groups.current.limite.getLayers()[1]; if (b) map.current.fitBounds(b.getBounds(), { padding: [20, 20] }); }}><Layers size={14} />Município todo</button>
           </div>
-          {mode && <div className="glass hint-bar"><Crosshair size={14} />{mode.type === 'place' ? 'Clique no mapa onde fica o novo local' : 'Clique no mapa onde está a ocorrência'}<button className="btn sm ghost" onClick={() => setMode(null)}>Cancelar</button></div>}
+          {mode && <div className="glass hint-bar"><Crosshair size={14} />Clique no mapa onde fica o novo prédio<button className="btn sm ghost" onClick={() => setMode(null)}>Cancelar</button></div>}
         </div>
         {wx?.current && (
           <div className="glass wx-float">
@@ -188,15 +176,12 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
       <aside className="map-side">
         <div className="glass card">
           <h3 style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Layers size={16} />Camadas</h3>
-          {[['limite', 'Limite do município (IBGE)'], ['locais', `Prédios públicos · ${places.length}`], ['frota', 'Frota por secretaria'], ['ocorr', `Ocorrências abertas · ${open.filter((o) => o.lat).length}`]].map(([k, l]) => (
+          {[['limite', 'Limite do município (IBGE)'], ['locais', `Prédios públicos · ${places.length}`], ['frota', 'Frota por secretaria'], ['ocorr', `Alertas de ocorrências · ${open.length}`]].map(([k, l]) => (
             <label key={k} className="chk"><input type="checkbox" checked={layers[k]} onChange={() => setLayers({ ...layers, [k]: !layers[k] })} />{l}</label>))}
           <div className="legend">{Object.entries(PLACE_KINDS).map(([k, [l, e]]) => <span key={k}>{e} {l}</span>)}
-            <span><i className="dot" style={{ background: PRIO.alta }} />OS prioridade alta</span><span><i className="dot" style={{ background: PRIO.media }} />média</span><span><i className="dot" style={{ background: PRIO.baixa }} />baixa</span></div>
+            <span><i className="dot" style={{ background: PRIO.alta }} />Prédio pisca: ocorrência alta</span><span><i className="dot" style={{ background: PRIO.media }} />média</span><span><i className="dot" style={{ background: PRIO.baixa }} />baixa</span></div>
           {canEdit && <div style={{ display: 'grid', gap: 8, marginTop: 10 }}>
             <button className="btn sm primary" onClick={() => setMode({ type: 'place' })}><Plus size={14} />Adicionar prédio público</button>
-            {semLocal.length > 0 && <select className="input" value="" onChange={(e) => e.target.value && setMode({ type: 'os', id: e.target.value })}>
-              <option value="">📍 Marcar local de uma OS ({semLocal.length} sem local)</option>
-              {semLocal.map((o) => <option key={o.id} value={o.id}>{o.forms?.smc?.data?.numero ? `OS ${o.forms.smc.data.numero} · ` : ''}{o.title}</option>)}</select>}
           </div>}
         </div>
 
