@@ -82,7 +82,7 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
 
   // mapa
   useEffect(() => {
-    const m = baseMap(el.current, tenant); map.current = m;
+    const m = baseMap(el.current, tenant, 16); map.current = m;
     ['limite', 'locais', 'ocorr'].forEach((k) => (groups.current[k] = L.layerGroup().addTo(m)));
     m.on('popupopen', (e) => e.popup.getElement()?.querySelectorAll('[data-os]').forEach((b) => (b.onclick = () => onOpenFrotas?.())));
     setTimeout(() => m.invalidateSize(), 200);
@@ -110,8 +110,7 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
     const geom = malha.features?.[0]?.geometry; if (!geom) return;
     const rings = (geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates).map((p) => p[0].map(([x, y]) => [y, x]));
     L.polygon([[[-89, -179], [-89, 179], [89, 179], [89, -179]], ...rings], { stroke: false, fillColor: '#0f172a', fillOpacity: 0.28, interactive: false }).addTo(g);
-    const line = L.polygon(rings, { color: '#2563eb', weight: 3, dashArray: '8 6', fill: false, interactive: false }).addTo(g);
-    if (!g._fitted) { map.current.fitBounds(line.getBounds(), { padding: [20, 20] }); g._fitted = true; }
+    L.polygon(rings, { color: '#2563eb', weight: 3, dashArray: '8 6', fill: false, interactive: false }).addTo(g);
   }, [malha, layers.limite]);
 
   const open = orders.filter((o) => !o.closed && !o.cancelled);
@@ -171,6 +170,10 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
           <div className="glass seg">
             <button className={bg === 'mapa' ? 'on' : ''} onClick={() => setBg('mapa')}><MapIcon size={14} />Mapa</button>
             <button className={bg === 'sat' ? 'on' : ''} onClick={() => setBg('sat')}><Satellite size={14} />Satélite</button>
+          </div>
+          <div className="glass seg">
+            <button onClick={() => map.current.setView(center(tenant), 16)}><Crosshair size={14} />Centro</button>
+            <button onClick={() => { const b = groups.current.limite.getLayers()[1]; if (b) map.current.fitBounds(b.getBounds(), { padding: [20, 20] }); }}><Layers size={14} />Município todo</button>
           </div>
           {mode && <div className="glass hint-bar"><Crosshair size={14} />{mode.type === 'place' ? 'Clique no mapa onde fica o novo local' : 'Clique no mapa onde está a ocorrência'}<button className="btn sm ghost" onClick={() => setMode(null)}>Cancelar</button></div>}
         </div>
