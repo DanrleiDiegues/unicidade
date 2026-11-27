@@ -184,6 +184,7 @@ export const demo = {
     const v = db.vehicles.find((x) => x.id === m.vehicle_id); if (v) { v.status = 'disponivel'; v.km = Math.max(v.km, Number(km_in)); }
     save();
   },
+  async tourShouldShow() { const u = db.users.find((x) => x.id === current); if (!u) return false; u.tour = (u.tour || 0) + 1; save(); return u.tour <= 2; },
   async addSuggestion(row, files = []) {
     const toUrl = (f) => new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(f); });
     const anexos = [];

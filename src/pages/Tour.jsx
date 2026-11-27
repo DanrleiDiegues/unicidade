@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { GraduationCap, ArrowRight, ArrowLeft, X } from 'lucide-react';
+import { api } from '../lib/api';
 
 const STEPS = [
   { sel: '[data-tour="city"]', t: 'Sua prefeitura', d: 'Aqui aparece a cidade em que você está trabalhando, com o brasão.' },
@@ -15,11 +16,17 @@ const STEPS = [
   { sel: '[data-tour="tour"]', t: 'Rever este tutorial', d: 'Clique em "Como usar" sempre que quiser ver este passeio de novo.' },
 ];
 
+// Abre sozinho no 1º e no 2º acesso de cada usuário (contado no banco, vale em qualquer aparelho).
 export function TourBotao({ userId }) {
-  const key = `uc-tour-${userId}`;
   const [on, setOn] = useState(false);
-  useEffect(() => { try { if (!localStorage.getItem(key)) setTimeout(() => setOn(true), 2800); } catch { /* ignore */ } }, [key]);
-  const close = () => { setOn(false); try { localStorage.setItem(key, '1'); } catch { /* ignore */ } };
+  useEffect(() => {
+    const flag = `uc-tour-sess-${userId}`;
+    try { if (sessionStorage.getItem(flag)) return; sessionStorage.setItem(flag, '1'); } catch { /* ignore */ }
+    let t;
+    api.tourShouldShow().then((show) => { if (show) t = setTimeout(() => setOn(true), 2800); }).catch(() => {});
+    return () => clearTimeout(t);
+  }, [userId]);
+  const close = () => setOn(false);
   return (
     <>
       <button className="btn sm" data-tour="tour" title="Veja um passeio rápido pelas funções do sistema" onClick={() => setOn(true)}><GraduationCap size={16} /><span className="hide-sm">Como usar</span></button>

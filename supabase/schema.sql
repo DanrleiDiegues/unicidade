@@ -250,3 +250,13 @@ grant select, insert, update on suggestions to authenticated;
 insert into storage.buckets (id, name, public, file_size_limit) values ('sugestoes', 'sugestoes', false, 8388608) on conflict (id) do nothing;
 create policy sug_up on storage.objects for insert to authenticated with check (bucket_id = 'sugestoes' and (storage.foldername(name))[1] = auth.uid()::text);
 create policy sug_read on storage.objects for select to authenticated using (bucket_id = 'sugestoes' and (is_admin() or (storage.foldername(name))[1] = auth.uid()::text));
+
+-- Tutorial "Como usar": abre sozinho nos 2 primeiros acessos de cada usuário
+alter table profiles add column if not exists tour_count int default 0;
+create or replace function tour_should_show() returns boolean language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  update profiles set tour_count = coalesce(tour_count, 0) + 1 where id = auth.uid() and coalesce(tour_count, 0) < 2 returning tour_count into n;
+  return n is not null;
+end $$;
+grant execute on function tour_should_show() to authenticated;

@@ -89,6 +89,7 @@ export const supa = {
     const m = ok(await sb.from('moves').update({ km_in: Number(km_in), in_at: new Date().toISOString() }).eq('id', id).select().single());
     await sb.from('vehicles').update({ status: 'disponivel', km: Number(km_in) }).eq('id', m.vehicle_id);
   },
+  async tourShouldShow() { const { data, error } = await sb.rpc('tour_should_show'); if (error) return false; return !!data; },
   async addSuggestion(row, files = []) {
     const { data: { user } } = await sb.auth.getUser();
     const anexos = [];
