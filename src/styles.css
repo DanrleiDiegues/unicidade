@@ -269,3 +269,19 @@ table.t td { padding: 10px; border-top: 1px solid var(--line); }
 .ibge .yr { font-size: 9.5px; opacity: .8; }
 .map-side .grow-card { overflow: auto; }
 @media (max-height: 820px) { .wx-chart, .map-side .legend { display: none; } .alert { font-size: 11px; } }
+/* faixa "em números" acima do mapa */
+.map-layout { display: grid; gap: 14px; }
+.map-layout .map-page { height: calc(100vh - 140px - 92px); min-height: 520px; }
+.stats { display: flex; align-items: stretch; border-radius: 20px; padding: 12px 6px; overflow-x: auto; scrollbar-width: thin; }
+.stats-head { display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 0 18px 0 12px; min-width: 150px; border-right: 1px solid rgba(148,163,184,.3); }
+.stats-head small { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent, #2563eb); font-weight: 700; }
+.stats-head b { font-size: 15px; line-height: 1.2; }
+.stats-head a { display: inline-flex; gap: 3px; align-items: center; font-size: 11px; color: var(--muted); text-decoration: none; margin-top: 2px; }
+.stat { flex: 1 1 0; min-width: 112px; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 2px 14px; border-right: 1px solid rgba(148,163,184,.22); }
+.stat:last-child { border-right: 0; }
+.stat small { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat b { font-size: 19px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; line-height: 1.15; }
+.stat em { font-style: normal; font-size: 11px; font-weight: 500; color: var(--muted); }
+.stat span { font-size: 10px; color: var(--muted); opacity: .8; }
+.stats > .muted { padding: 0 16px; align-self: center; }
+@media (max-width: 980px) { .map-layout .map-page { height: auto; } }

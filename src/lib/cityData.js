@@ -16,9 +16,9 @@ export const IBGE_IND = [
   [29167, 'Área do município', 'km²'],
   [47001, 'PIB per capita', 'R$'],
   [29765, 'Salário médio formal', 'sal. mín.'],
-  [60045, 'Escolarização 6 a 14 anos', '%'],
-  [60030, 'Esgotamento sanitário adequado', '%'],
-  [60048, 'Receita vinda de transferências', '%'],
+  [60045, 'Escolarização 6–14 anos', '%'],
+  [60030, 'Esgoto adequado', '%'],
+  [60048, 'Receita de repasses', '%'],
 ];
 
 export function ibgeMalha(code) {
@@ -26,7 +26,7 @@ export function ibgeMalha(code) {
 }
 
 export function ibgeIndicadores(code) {
-  return cached(`uc-ibge-ind-${code}`, 864e5, async () => {
+  return cached(`uc-ibge-ind2-${code}`, 864e5, async () => {
     const r = await get(`${IBGE}/v1/pesquisas/indicadores/${IBGE_IND.map((x) => x[0]).join('|')}/resultados/${code}`);
     return IBGE_IND.map(([id, label, unit]) => {
       const serie = r.find((x) => x.id === id)?.res?.[0]?.res || {};

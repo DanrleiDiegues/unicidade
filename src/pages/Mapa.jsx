@@ -150,7 +150,25 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
     setDraft(null); notify?.('Local adicionado ao mapa.'); load();
   }
 
+  const ibgeLink = `https://cidades.ibge.gov.br/brasil/${(tenant.uf || '').toLowerCase()}/${norm(tenant.name).replace(/\s+/g, '-')}/panorama`;
+  const stats = ind ? [...ind.map((x) => ({ k: x.id, label: x.label, v: x.unit === 'R$' ? `R$ ${fmtNum(x.valor, 0)}` : x.unit === '%' ? `${fmtNum(x.valor, 1)}%` : fmtNum(x.valor, x.unit === 'km²' || x.unit === 'sal. mín.' ? 1 : 0), u: x.unit !== 'R$' && x.unit !== '%' ? x.unit : '', ano: x.ano })),
+    ...(pop?.valor && area?.valor ? [{ k: 'dens', label: 'Densidade', v: fmtNum(pop.valor / area.valor, 1), u: 'hab/km²', ano: 'calculada' }] : [])] : [];
+
   return (
+    <div className="map-layout">
+      <section className="glass stats">
+        <div className="stats-head"><small>IBGE</small><b>{tenant.name} em números</b>
+          <a href={ibgeLink} target="_blank" rel="noreferrer">IBGE Cidades <ExternalLink size={10} /></a></div>
+        {!ibge && <span className="muted">Código IBGE da cidade não configurado.</span>}
+        {ibge && ind === null && <span className="muted">Buscando dados do IBGE…</span>}
+        {ind === false && <span className="muted">IBGE indisponível no momento.</span>}
+        {stats.map((x) => (
+          <div key={x.k} className="stat" title={`${x.label} (${x.ano})`}>
+            <small>{x.label}</small>
+            <b>{x.v}{x.u && <em> {x.u}</em>}</b>
+            <span>{x.ano}</span>
+          </div>))}
+      </section>
     <div className="map-page">
       <div className="glass map-box">
         <div ref={el} className="map" />
@@ -185,7 +203,7 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
           </div>}
         </div>
 
-        <div className="glass card">
+        <div className="glass card grow-card">
           <h3>Clima em {tenant.name}</h3>
           {wx === null && <span className="muted">Carregando previsão…</span>}
           {wx === false && <span className="muted">Previsão indisponível no momento.</span>}
@@ -204,19 +222,6 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
           <small className="muted src">Fonte: Open-Meteo (dados abertos)</small>
         </div>
 
-        <div className="glass card grow-card">
-          <h3>{tenant.name} em números</h3>
-          {!ibge && <span className="muted">Código IBGE da cidade não configurado.</span>}
-          {ibge && ind === null && <span className="muted">Buscando dados do IBGE…</span>}
-          {ind === false && <span className="muted">IBGE indisponível no momento.</span>}
-          {ind && <div className="ibge">
-            {ind.map((x) => (
-              <div key={x.id} title={`${x.label} (${x.ano})`}><small>{x.label}</small>
-                <b>{x.unit === 'R$' ? `R$ ${fmtNum(x.valor, 0)}` : x.unit === '%' ? `${fmtNum(x.valor, 1)}%` : fmtNum(x.valor, x.unit === 'km²' || x.unit === 'sal. mín.' ? 1 : 0)}{x.unit !== 'R$' && x.unit !== '%' ? <em> {x.unit}</em> : ''}<em className="yr"> · {x.ano}</em></b></div>))}
-            {pop?.valor && area?.valor && <div title="Densidade (calculada)"><small>Densidade</small><b>{fmtNum(pop.valor / area.valor, 1)}<em> hab/km²</em></b></div>}
-          </div>}
-          <a className="src" href={`https://cidades.ibge.gov.br/brasil/${(tenant.uf || '').toLowerCase()}/${norm(tenant.name).replace(/\s+/g, '-')}/panorama`} target="_blank" rel="noreferrer">Fonte: IBGE Cidades <ExternalLink size={11} /></a>
-        </div>
       </aside>
 
       {draft && (
@@ -233,6 +238,7 @@ export default function Mapa({ tenant, role, notify, onOpenFrotas }) {
           </form>
         </Modal>
       )}
+    </div>
     </div>
   );
 }
