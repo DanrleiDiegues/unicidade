@@ -218,3 +218,13 @@ grant select, insert on citizen_access to authenticated;
 -- Extras (mapa/prédios) só para o perfil geral (prefeito, vice e assessoria)
 drop policy if exists p_read on places;
 create policy p_read on places for select using (is_admin() or role_in(tenant_id) = 'geral');
+
+-- Funcionários (só perfil geral). Sem CPF/salário.
+create table if not exists employees (
+  id uuid primary key default gen_random_uuid(), tenant_id uuid not null references tenants on delete cascade,
+  nome text not null, cargo text, secretaria text, vinculo text, desde date, ativo boolean default true,
+  telefone text, email text, cnh_cat text, cnh_validade date, siplan_cod int, origem text, notas text,
+  created_at timestamptz default now());
+alter table employees enable row level security;
+create policy e_all on employees for all using (is_admin() or role_in(tenant_id) = 'geral') with check (is_admin() or role_in(tenant_id) = 'geral');
+grant select, insert, update, delete on employees to authenticated;

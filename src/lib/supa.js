@@ -89,6 +89,9 @@ export const supa = {
     const m = ok(await sb.from('moves').update({ km_in: Number(km_in), in_at: new Date().toISOString() }).eq('id', id).select().single());
     await sb.from('vehicles').update({ status: 'disponivel', km: Number(km_in) }).eq('id', m.vehicle_id);
   },
+  async employees(tenant_id) { return ok(await sb.from('employees').select('*').eq('tenant_id', tenant_id).order('nome')); },
+  async addEmployee(x) { return ok(await sb.from('employees').insert(x).select().single()); },
+  async updateEmployee(id, patch) { ok(await sb.from('employees').update(patch).eq('id', id)); },
   async citizens(tenant_id) { return ok(await sb.from('citizens').select('*').eq('tenant_id', tenant_id).order('nome')); },
   async addCitizen(x) { return ok(await sb.from('citizens').insert(x).select().single()); },
   async citizenEvents(citizen_id) { return ok(await sb.from('citizen_events').select('*').eq('citizen_id', citizen_id).order('data', { ascending: false })); },

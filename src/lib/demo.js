@@ -2,7 +2,7 @@
 // Tem as mesmas funções do adaptador Supabase (supa.js), então as telas não mudam.
 import { STAGES } from './catalog';
 
-const KEY = 'unicidade-demo-v7';
+const KEY = 'unicidade-demo-v8';
 const uid = () => Math.random().toString(36).slice(2, 10);
 const now = () => new Date().toISOString();
 const daysAgo = (d) => new Date(Date.now() - d * 864e5).toISOString();
@@ -63,7 +63,7 @@ function seedCitizens(db, tenant_id) {
 }
 
 function seed() {
-  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [], suppliers: [], places: [], citizens: [], cevents: [], caccess: [] };
+  const db = { users: [], tenants: [], members: [], vehicles: [], orders: [], fuel: [], outbox: [], moves: [], suppliers: [], places: [], citizens: [], cevents: [], caccess: [], employees: [] };
   const admin = { id: uid(), name: 'Danrlei Diegues', email: 'danrlei.diegueso@gmail.com', platform_admin: true, welcomed: true };
   const gestor = { id: uid(), name: 'Danrlei Oliveira', email: 'danrlei.oliveira@estudante.ufjf.br', welcomed: false };
   const motorista = { id: uid(), name: 'José Motorista', email: 'motorista@chacara.demo', welcomed: false };
@@ -78,6 +78,9 @@ function seed() {
     ['Pátio de obras (exemplo)', 'obras', 'Obras', -21.6790, -43.2195]]
     .forEach(([name, kind, secretaria, lat, lng]) => db.places.push({ id: uid(), tenant_id: chacara.id, name, kind, secretaria, lat, lng }));
   seedCitizens(db, chacara.id);
+  [['José Motorista', 'Motorista', 'Obras e Serviços Urbanos', 'Efetivo', '2019-03-01', 'D', 40], ['Prefeito (exemplo)', 'Prefeito Municipal', 'Gabinete', 'Agente político', '2025-01-01', 'B', 900],
+   ['Maria Enfermeira (exemplo)', 'Enfermeiro(a)', 'Saúde', 'Efetivo', '2016-05-10', 'B', 400], ['Carlos Operador (exemplo)', '', 'Obras e Serviços Urbanos', 'Contratado', '2024-07-01', 'E', -10]]
+    .forEach(([nome, cargo, secretaria, vinculo, desde, cnh_cat, d]) => db.employees.push({ id: uid(), tenant_id: chacara.id, nome, cargo, secretaria, vinculo, desde, ativo: true, cnh_cat, cnh_validade: daysAgo(-d).slice(0, 10), origem: 'Exemplo' }));
   [['Auto Elétrica Chácara (exemplo)', 'Auto elétrica'], ['Mecânica Diesel São João (exemplo)', 'Oficina mecânica'], ['Concessionária VW Juiz de Fora (exemplo)', 'Concessionária']]
     .forEach(([name, kind]) => db.suppliers.push({ id: uid(), tenant_id: chacara.id, name, kind, doc: '', phone: '' }));
   return db;
@@ -181,6 +184,9 @@ export const demo = {
     const v = db.vehicles.find((x) => x.id === m.vehicle_id); if (v) { v.status = 'disponivel'; v.km = Math.max(v.km, Number(km_in)); }
     save();
   },
+  async employees(tenant_id) { return (db.employees || []).filter((x) => x.tenant_id === tenant_id).sort((a, b) => a.nome.localeCompare(b.nome)); },
+  async addEmployee(x) { const e = { id: uid(), ...x }; (db.employees ||= []).push(e); save(); return e; },
+  async updateEmployee(id, patch) { Object.assign(db.employees.find((x) => x.id === id), patch); save(); },
   async citizens(tenant_id) { return (db.citizens || []).filter((x) => x.tenant_id === tenant_id).sort((a, b) => a.nome.localeCompare(b.nome)); },
   async addCitizen(x) { const c = { id: uid(), created_at: now(), ...x }; (db.citizens ||= []).push(c); save(); return c; },
   async citizenEvents(citizen_id) { return (db.cevents || []).filter((x) => x.citizen_id === citizen_id).sort((a, b) => b.data.localeCompare(a.data)); },
