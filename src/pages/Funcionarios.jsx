@@ -86,15 +86,13 @@ export default function Funcionarios({ tenant, notify }) {
                 </div>
                 <div className="cid-tags">
                   <span className="badge">{sel.ativo === false ? 'Inativo' : 'Ativo'}</span>
-                  {sel.origem && <span className="badge">Origem: {sel.origem}</span>}
-                  {sel.siplan_cod && <span className="badge">Cód. SIPLAN {sel.siplan_cod}</span>}
                 </div>
               </div>
               <button className="btn sm" onClick={() => setEdit(sel)}><Pencil size={14} />Editar</button>
             </div>
 
             <div className="cid-areas" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-              <div className="glass cid-area" style={{ '--c': '#2563eb' }}><span className="ic"><CalendarClock size={18} /></span><small>Tempo de casa</small><b style={{ fontSize: 18 }}>{tempoCasa(sel.desde)}</b><span className="last">Desde {fd(sel.desde)}{(sel.origem || '').startsWith('SIPLAN') ? ' (cadastro no SIPLAN)' : ''}</span></div>
+              <div className="glass cid-area" style={{ '--c': '#2563eb' }}><span className="ic"><CalendarClock size={18} /></span><small>Tempo de casa</small><b style={{ fontSize: 18 }}>{tempoCasa(sel.desde)}</b><span className="last">Desde {fd(sel.desde)}</span></div>
               <div className="glass cid-area" style={{ '--c': dias != null && dias <= 60 ? '#dc2626' : '#16a34a' }}><span className="ic"><IdCard size={18} /></span><small>CNH</small>
                 <b style={{ fontSize: 18 }}>{sel.cnh_cat || '—'}</b><span className="last">{sel.cnh_validade ? (dias < 0 ? `Vencida há ${-dias} dias` : `Vence em ${fd(sel.cnh_validade)}`) : 'Não informada'}</span></div>
               <div className="glass cid-area" style={{ '--c': '#0891b2' }}><span className="ic"><Car size={18} /></span><small>Saídas com veículo</small><b>{myMoves.length}</b><span className="last">{myMoves[0] ? `Última: ${fd(myMoves[0].out_at)}` : 'Nenhuma registrada'}</span></div>
