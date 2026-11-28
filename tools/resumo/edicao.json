@@ -1,0 +1,38 @@
+{"nome": "Helton", "regiao": "Juiz de Fora e Zona da Mata", "data": "Sábado, 28 de novembro de 2026", "numero": 2,
+ "secoes": [
+  {"titulo": "Em destaque: domingo de chuva", "icone": "🌧️", "cor": "#dbeafe",
+   "itens": [
+    {"local": "Juiz de Fora", "data": "27/11", "titulo": "Inmet põe Juiz de Fora em alerta de chuva para todo o domingo (29)",
+     "resumo": "O aviso vale das 0h às 23h59 de domingo e prevê de 20 a 30 mm por hora, ou até 50 mm no dia, com rajadas de vento de 40 a 60 km/h. O risco de queda de galhos, falta de luz e alagamentos é classificado como baixo, mas pede atenção.",
+     "fonte": "Acessa.com", "url": "https://www.acessa.com/cidade/2026/11/345055-juiz-de-fora-tem-previsao-de-chuva-no-fim-de-semana-e-alerta-do-inmet-para-domingo.html"},
+    {"local": "Juiz de Fora", "data": "27/11", "titulo": "Fim de semana segue chuvoso, com chance de temporal na tarde de domingo",
+     "resumo": "Segundo a Climatempo, sábado e domingo têm chuva na cidade, e o maior volume, cerca de 32 mm, fica para domingo, quando pode haver temporais à tarde e à noite. As máximas ficam entre 25 °C e 27 °C.",
+     "fonte": "Folha JF", "url": "https://folhajf.com.br/juiz-de-fora-fim-de-semana-temperaturas-chuva-tempo/"},
+    {"local": "Zona da Mata", "data": "25/11", "titulo": "Frente fria trouxe risco de até 200 mm em 24 horas na região de Ubá e Muriaé",
+     "resumo": "A meteorologia da Energisa apontou Ubá e Muriaé como as áreas com os maiores acumulados na passagem da frente fria desta semana. O Cemaden classificou como alto o risco de deslizamentos em encostas da região.",
+     "fonte": "O Vigilante Online", "url": "https://www.ovigilanteonline.com.br/site/2026/11/25/zona-da-mata-esta-sob-previsao-de-temporais-com-acumulados-que-podem-chegar-a-200-mm/"}
+   ],
+   "cta": ["Alerta para domingo: quem a sua prefeitura aciona primeiro?", "No UNIcidade, o gabinete vê no mapa da cidade a frota, os prédios públicos e as ocorrências de cada secretaria, com o alerta de chuva do dia na mesma tela.", "Conhecer o UNIcidade →"]},
+  {"titulo": "Juiz de Fora", "icone": "📍", "cor": "#ede9fe",
+   "itens": [
+    {"local": "Juiz de Fora", "data": "27/11", "titulo": "Cadastro para creches municipais de 2027 terminou nesta sexta",
+     "resumo": "O cadastro foi presencial, no Universo, no Morro da Glória, para crianças nascidas entre abril de 2023 e novembro de 2026, com documentos digitais do gov.br aceitos. Quem já está em creche conveniada não precisou se cadastrar de novo.",
+     "fonte": "Tribuna de Minas", "url": "https://tribunademinas.com.br/noticias/cidade/27-11-2026/cadastro-para-creches-em-juiz-de-fora-termina-nesta-sexta-feira.html"},
+    {"local": "Juiz de Fora", "data": "26/11", "titulo": "Grupo Divulgação fecha a temporada com peças gratuitas; a última é neste sábado",
+     "resumo": "O grupo, criado em 1966, apresenta três espetáculos gratuitos às 20h no Fórum da Cultura e no Centro Cultural Bernardo Mascarenhas. A última sessão, \"Lucros & Perdas\", é neste sábado (28), com ingressos sujeitos à lotação.",
+     "fonte": "Tribuna de Minas", "url": "https://tribunademinas.com.br/noticias/cultura/26-11-2026/grupo-divulgacao-encerra-temporada-com-tres-espetaculos-gratuitos-em-juiz-de-fora.html"},
+    {"local": "Juiz de Fora", "data": "28/11", "titulo": "Corrida de rua fecha o ranking do ano neste domingo, no Jardim Norte",
+     "resumo": "A largada é às 7h45 no estacionamento do Shopping Jardim Norte, com percursos de 3 e 6 km, e encerra a 38ª edição do ranking de corridas da cidade. Há também prova infantil no sábado, às 15h.",
+     "fonte": "Tribuna de Minas", "url": "https://tribunademinas.com.br/noticias/esportes/28-11-2026/ultima-do-ranking-corrida-da-drogaria-souza-acontece-neste-domingo.html"}
+   ]},
+  {"titulo": "Minas Gerais", "icone": "🏛️", "cor": "#dcfce7",
+   "itens": [
+    {"local": "Minas Gerais", "data": "27/11", "titulo": "Surtos de sarna foram registrados em 49 municípios mineiros em 2026",
+     "resumo": "A lista da Secretaria de Estado de Saúde não inclui Juiz de Fora nem cidades da Zona da Mata. Divinópolis decretou emergência de saúde por 60 dias após casos em uma escola municipal, e como a doença não é de notificação obrigatória, o Estado não tem um total de pessoas infectadas.",
+     "fonte": "Tribuna de Minas", "url": "https://tribunademinas.com.br/noticias/minas/27-11-2026/surtos-de-sarna-humana-atingem-49-municipios-de-minas-gerais-em-2026.html"},
+    {"local": "Minas Gerais", "data": "27/11", "titulo": "Piso Mineiro repassa R$ 130 milhões por ano à assistência social dos municípios",
+     "resumo": "Em balanço de 2023 a 2026, o Governo de Minas informa que o valor é dividido conforme o número de famílias no CadÚnico de cada cidade. O Estado também cita mais de R$ 15 milhões para unidades do Creas e R$ 45 milhões para equipar serviços de atendimento a pessoas com deficiência.",
+     "fonte": "Portal Carlos Souto (Agência Minas)", "url": "https://www.portalcarlossouto.com.br/noticias/gerais/balanco-2023-2026-com-investimento-recorde-de-r-130-milhoes-governo-de-minas-fortalece-a-assistencia-social-em-todo-o-estado/"}
+   ]}
+ ],
+ "cta_final": ["Leve a gestão da sua cidade para o UNIcidade", "Frota, mapa da cidade, cidadãos e equipe em um só lugar, com um login para cada servidor. A prefeitura inteira, em um só lugar.", "Abrir o UNIcidade →"]}
